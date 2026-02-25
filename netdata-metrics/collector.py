@@ -48,6 +48,25 @@ MAX_WORKERS      = int(os.environ.get("MAX_WORKERS", "8"))
 
 CLOUD_BASE = "https://app.netdata.cloud/api/v2"
 
+# ── SNMP node / switch config ──────────────────────────────────────────────────
+SNMP_NODE_IP = os.environ.get("SNMP_NODE_IP", "192.168.140.134")
+
+# Prometheus-via-Netdata switch sources on the SNMP node
+# key = device name (as it appears in chart prefix), value = human label
+SWITCH_SOURCES = {
+    "msn-ls-c3569-as-01": "C3569-AS-01",
+    "msn-ls-cr-01":       "CR-01",
+}
+
+# Metrics to pull per port (metric_name → InfluxDB field name suffix)
+SWITCH_METRICS = {
+    "ifHCInOctets":  "bytes_in",
+    "ifHCOutOctets": "bytes_out",
+    "ifOperStatus":  "oper_status",
+    "ifInErrors":    "errors_in",
+    "ifOutErrors":   "errors_out",
+}
+
 # Charts to collect and their InfluxDB measurement names
 CHART_MAP = {
     "system.cpu":    "node_cpu",
@@ -332,6 +351,134 @@ def collect_node(node: dict) -> tuple[str, list[Point]]:
     return name, points
 
 
+# ── Switch port collection ─────────────────────────────────────────────────────
+import re as _re
+
+def _parse_port_info(chart_name: str) -> dict:
+    """
+    Parse port metadata from a Netdata prometheus chart name like:
+      prometheus_msn-ls-c3569-as-01.ifHCInOctets-ifAlias="AP_Uplinks"-ifDescr=GigabitEthernet1/0/43-ifIndex=50-ifName=Gi1/0/43
+    Returns dict with keys: ifAlias, ifDescr, ifIndex, ifName
+    """
+    alias_m = _re.search(r'ifAlias="([^"]*)"', chart_name)
+    descr_m = _re.search(r'ifDescr=([^-]+)', chart_name)
+    idx_m   = _re.search(r'ifIndex=(\d+)', chart_name)
+    name_m  = _re.search(r'ifName=(\S+)$', chart_name)
+    return {
+        "ifAlias": alias_m.group(1) if alias_m else "",
+        "ifDescr": descr_m.group(1) if descr_m else "",
+        "ifIndex": int(idx_m.group(1)) if idx_m else 0,
+        "ifName":  name_m.group(1) if name_m else "",
+    }
+
+
+def discover_switch_port_charts(snmp_client: AgentClient, device: str) -> list[dict]:
+    """
+    Discover all port chart names for a device and map them to port metadata.
+    Returns list of dicts: [{index, name, alias, descr, charts: {metric: chart_name}}]
+    """
+    all_charts = snmp_client.get_charts_list()
+    prefix = f"prometheus_{device}."
+    # Group charts by port index
+    port_map: dict[int, dict] = {}
+    for chart in all_charts:
+        if not chart.startswith(prefix):
+            continue
+        metric_part = chart[len(prefix):]
+        # Get base metric (before first hyphen-ifAlias)
+        base_metric = metric_part.split("-ifAlias")[0].split("-ifDescr")[0]
+        if base_metric not in SWITCH_METRICS:
+            continue
+        info = _parse_port_info(chart)
+        idx = info["ifIndex"]
+        if idx == 0:
+            continue
+        if idx not in port_map:
+            port_map[idx] = {
+                "index": idx,
+                "name":  info["ifName"],
+                "alias": info["ifAlias"],
+                "descr": info["ifDescr"],
+                "charts": {},
+            }
+        port_map[idx]["charts"][base_metric] = chart
+    return list(port_map.values())
+
+
+def collect_switch_port(snmp_client: AgentClient, port: dict, device_label: str,
+                        ts: datetime) -> list[Point]:
+    """Collect all available metrics for one switch port and return InfluxDB Points."""
+    charts = port.get("charts", {})
+    if not charts:
+        return []
+
+    # Require at minimum the traffic charts
+    if "ifHCInOctets" not in charts and "ifHCOutOctets" not in charts:
+        return []
+
+    p = (
+        Point("switch_port")
+        .tag("device",     device_label)
+        .tag("port_name",  port["name"])
+        .tag("port_alias", port["alias"] or port["name"])
+        .tag("port_index", str(port["index"]))
+        .time(ts, "s")
+    )
+
+    has_data = False
+    for metric, field_suffix in SWITCH_METRICS.items():
+        chart = charts.get(metric)
+        if not chart:
+            continue
+        data = snmp_client.get_chart_data(chart, points=1)
+        vals = extract_latest(data) if data else None
+        if not vals:
+            continue
+        # Most switch metric charts have a single dimension named after the metric
+        # or standard names like 'value', 'running', etc.
+        value = None
+        if metric == "ifOperStatus":
+            # Dimension 'running' = 1 means up; sum positive dims
+            value = float(1 if any(v and v > 0 for v in vals.values()) else 0)
+        else:
+            # Take first non-zero positive value or first value
+            for v in vals.values():
+                if v is not None:
+                    value = float(abs(v))
+                    break
+        if value is not None:
+            p = p.field(field_suffix, value)
+            has_data = True
+
+    return [p] if has_data else []
+
+
+def collect_switch_device(device: str, device_label: str,
+                          snmp_client: AgentClient, port_cache: dict,
+                          ts: datetime) -> tuple[str, list[Point]]:
+    """
+    Collect all port metrics for one switch device.
+    port_cache[device] is refreshed from discover_switch_port_charts() when stale.
+    Returns (device_label, list_of_points).
+    """
+    ports = port_cache.get(device)
+    if not ports:
+        logger.debug(f"Switch {device}: no port cache, skipping")
+        return device_label, []
+
+    all_points = []
+    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as ex:
+        futures = {
+            ex.submit(collect_switch_port, snmp_client, port, device_label, ts): port
+            for port in ports
+        }
+        for fut in as_completed(futures):
+            all_points.extend(fut.result())
+
+    logger.debug(f"Switch {device_label}: {len(all_points)} port data points")
+    return device_label, all_points
+
+
 # ── Main loop ──────────────────────────────────────────────────────────────────
 def main():
     logger.info("=" * 60)
@@ -364,6 +511,11 @@ def main():
     node_map = {}
     node_map_refreshed = 0
 
+    # Switch port cache — refreshed every 15 minutes
+    port_cache: dict[str, list] = {}
+    port_cache_refreshed = 0
+    snmp_client = AgentClient(SNMP_NODE_IP)
+
     running = True
     def shutdown(sig, frame):
         nonlocal running
@@ -380,9 +532,24 @@ def main():
             node_map = get_node_ip_map()
             node_map_refreshed = time.time()
 
+        # Refresh switch port chart cache every 15 minutes
+        if time.time() - port_cache_refreshed > 900:
+            if snmp_client.is_reachable():
+                for device in SWITCH_SOURCES:
+                    ports = discover_switch_port_charts(snmp_client, device)
+                    if ports:
+                        port_cache[device] = ports
+                        logger.info(f"Switch {device}: discovered {len(ports)} ports")
+                    else:
+                        logger.warning(f"Switch {device}: no ports discovered")
+                port_cache_refreshed = time.time()
+            else:
+                logger.warning(f"SNMP node {SNMP_NODE_IP} unreachable, skipping switch discovery")
+
         nodes = list(node_map.values())
         all_points = []
         ok_count = 0
+        ts = datetime.now(timezone.utc)
 
         # Collect from all nodes in parallel
         with ThreadPoolExecutor(max_workers=MAX_WORKERS) as ex:
@@ -393,11 +560,23 @@ def main():
                     all_points.extend(points)
                     ok_count += 1
 
+        # Collect switch port metrics (sequential per device, parallel per port)
+        switch_points = 0
+        if port_cache and snmp_client.is_reachable():
+            for device, label in SWITCH_SOURCES.items():
+                _, pts = collect_switch_device(device, label, snmp_client, port_cache, ts)
+                all_points.extend(pts)
+                switch_points += len(pts)
+
         # Write batch to InfluxDB
         if all_points:
             try:
                 write_api.write(bucket=INFLUXDB_BUCKET, org=INFLUXDB_ORG, record=all_points)
-                logger.info(f"Wrote {len(all_points)} points from {ok_count}/{len(nodes)} nodes")
+                logger.info(
+                    f"Wrote {len(all_points)} points: "
+                    f"{ok_count}/{len(nodes)} nodes, "
+                    f"{switch_points} switch port metrics"
+                )
             except Exception as e:
                 logger.error(f"InfluxDB write failed: {e}")
         else:
