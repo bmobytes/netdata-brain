@@ -51,11 +51,12 @@ CLOUD_BASE = "https://app.netdata.cloud/api/v2"
 # ── SNMP node / switch config ──────────────────────────────────────────────────
 SNMP_NODE_IP = os.environ.get("SNMP_NODE_IP", "192.168.140.134")
 
-# Prometheus-via-Netdata switch sources on the SNMP node
-# key = device name (as it appears in chart prefix), value = human label
+# Prometheus-via-Netdata switch sources on the SNMP node.
+# key = device name (as it appears in prometheus_ chart prefix), value = human label.
+# NOTE: C3569 and CR-01 went stale 2026-02-05 — collector stopped scraping them.
+# CSR-SAN is active; msn-ls-csr-san-01 is actually a MikroTik router (ether1/bridge1 ifaces).
 SWITCH_SOURCES = {
-    "msn-ls-c3569-as-01": "C3569-AS-01",
-    "msn-ls-cr-01":       "CR-01",
+    "msn-ls-csr-san-01": "CSR-SAN-01",
 }
 
 # Metrics to pull per port (metric_name → InfluxDB field name suffix)
@@ -130,6 +131,28 @@ class AgentClient:
                 "group": "average",
             }
             resp = self.session.get(url, params=params, timeout=self.timeout)
+            if resp.status_code == 404:
+                return None
+            resp.raise_for_status()
+            return resp.json()
+        except requests.exceptions.Timeout:
+            return None
+        except requests.exceptions.ConnectionError:
+            return None
+        except Exception:
+            return None
+
+    def get_chart_data_by_url(self, data_url: str, points: int = 1) -> Optional[dict]:
+        """
+        Fetch chart data using Netdata's pre-built data_url (from /api/v1/charts).
+        The data_url already contains the correctly-encoded chart name, avoiding
+        URL encoding issues with special chars (=, ", /) in prometheus chart IDs.
+        """
+        try:
+            base_host = self.base.replace("/api/v1", "")
+            url = (f"{base_host}{data_url}"
+                   f"&after={-(POLL_INTERVAL + 5)}&before=0&points={points}&format=json&group=average")
+            resp = self.session.get(url, timeout=self.timeout)
             if resp.status_code == 404:
                 return None
             resp.raise_for_status()
@@ -374,22 +397,41 @@ def _parse_port_info(chart_name: str) -> dict:
 
 def discover_switch_port_charts(snmp_client: AgentClient, device: str) -> list[dict]:
     """
-    Discover all port chart names for a device and map them to port metadata.
-    Returns list of dicts: [{index, name, alias, descr, charts: {metric: chart_name}}]
+    Discover all port charts for a device using /api/v1/charts metadata.
+    Stores data_url (pre-sanitized by Netdata) to avoid URL encoding issues
+    with prometheus chart IDs that contain =, ", and / characters.
+    Returns list of dicts: [{index, name, alias, descr, charts: {metric: data_url}}]
     """
-    all_charts = snmp_client.get_charts_list()
+    try:
+        base_host = snmp_client.base.replace("/api/v1", "")
+        resp = snmp_client.session.get(f"{snmp_client.base}/charts", timeout=10)
+        resp.raise_for_status()
+        all_charts = resp.json().get("charts", {})
+    except Exception as e:
+        logger.error(f"Failed to fetch charts for switch discovery: {e}")
+        return []
+
     prefix = f"prometheus_{device}."
-    # Group charts by port index
     port_map: dict[int, dict] = {}
-    for chart in all_charts:
-        if not chart.startswith(prefix):
+
+    for chart_id, chart_obj in all_charts.items():
+        if not chart_id.startswith(prefix):
             continue
-        metric_part = chart[len(prefix):]
-        # Get base metric (before first hyphen-ifAlias)
+        metric_part = chart_id[len(prefix):]
+        # Extract base metric name (before any -ifAlias / -ifDescr suffix)
         base_metric = metric_part.split("-ifAlias")[0].split("-ifDescr")[0]
         if base_metric not in SWITCH_METRICS:
             continue
-        info = _parse_port_info(chart)
+        data_url = chart_obj.get("data_url", "")
+        if not data_url:
+            continue
+        # Skip stale charts (no data in last 2 hours)
+        import time as _time
+        last_entry = chart_obj.get("last_entry", 0)
+        if _time.time() - last_entry > 7200:
+            continue
+
+        info = _parse_port_info(chart_id)
         idx = info["ifIndex"]
         if idx == 0:
             continue
@@ -401,7 +443,8 @@ def discover_switch_port_charts(snmp_client: AgentClient, device: str) -> list[d
                 "descr": info["ifDescr"],
                 "charts": {},
             }
-        port_map[idx]["charts"][base_metric] = chart
+        port_map[idx]["charts"][base_metric] = data_url
+
     return list(port_map.values())
 
 
@@ -427,10 +470,10 @@ def collect_switch_port(snmp_client: AgentClient, port: dict, device_label: str,
 
     has_data = False
     for metric, field_suffix in SWITCH_METRICS.items():
-        chart = charts.get(metric)
-        if not chart:
+        data_url = charts.get(metric)
+        if not data_url:
             continue
-        data = snmp_client.get_chart_data(chart, points=1)
+        data = snmp_client.get_chart_data_by_url(data_url, points=1)
         vals = extract_latest(data) if data else None
         if not vals:
             continue
