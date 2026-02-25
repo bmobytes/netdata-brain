@@ -1,0 +1,231 @@
+{
+  "dashboard": {
+    "title": "Bartos Cloud — Infrastructure Metrics",
+    "tags": ["netdata", "infrastructure"],
+    "timezone": "browser",
+    "refresh": "1m",
+    "panels": [
+      {
+        "id": 1,
+        "gridPos": {"x": 0, "y": 0, "w": 12, "h": 8},
+        "type": "bargauge",
+        "title": "CPU Usage % — All Nodes",
+        "options": {
+          "orientation": "horizontal",
+          "reduceOptions": {"calcs": ["lastNotNull"]},
+          "displayMode": "gradient"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "min": 0,
+            "max": 100,
+            "thresholds": {
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "yellow", "value": 60},
+                {"color": "orange", "value": 80},
+                {"color": "red", "value": 90}
+              ]
+            }
+          }
+        },
+        "targets": [{
+          "datasource": {"uid": "cfecbpgdhs5j4b"},
+          "refId": "A",
+          "query": "from(bucket: \"netdata\") |> range(start: -2m) |> filter(fn: (r) => r._measurement == \"node_cpu\" and r._field == \"cpu_used_pct\") |> last() |> keep(columns: [\"_value\", \"node_name\"]) |> rename(columns: {node_name: \"_field\"})"
+        }]
+      },
+      {
+        "id": 2,
+        "gridPos": {"x": 12, "y": 0, "w": 12, "h": 8},
+        "type": "bargauge",
+        "title": "RAM Usage % — All Nodes",
+        "options": {
+          "orientation": "horizontal",
+          "reduceOptions": {"calcs": ["lastNotNull"]},
+          "displayMode": "gradient"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "min": 0,
+            "max": 100,
+            "thresholds": {
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "yellow", "value": 70},
+                {"color": "orange", "value": 85},
+                {"color": "red", "value": 95}
+              ]
+            }
+          }
+        },
+        "targets": [{
+          "datasource": {"uid": "cfecbpgdhs5j4b"},
+          "refId": "A",
+          "query": "from(bucket: \"netdata\") |> range(start: -2m) |> filter(fn: (r) => r._measurement == \"node_memory\" and r._field == \"ram_used_pct\") |> last() |> keep(columns: [\"_value\", \"node_name\"]) |> rename(columns: {node_name: \"_field\"})"
+        }]
+      },
+      {
+        "id": 3,
+        "gridPos": {"x": 0, "y": 8, "w": 12, "h": 10},
+        "type": "timeseries",
+        "title": "CPU Usage % Over Time",
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "custom": {"lineWidth": 1, "fillOpacity": 5},
+            "min": 0,
+            "max": 100
+          }
+        },
+        "targets": [{
+          "datasource": {"uid": "cfecbpgdhs5j4b"},
+          "refId": "A",
+          "query": "from(bucket: \"netdata\") |> range(start: -1h) |> filter(fn: (r) => r._measurement == \"node_cpu\" and r._field == \"cpu_used_pct\") |> aggregateWindow(every: 1m, fn: mean, createEmpty: false) |> group(columns: [\"node_name\"])"
+        }]
+      },
+      {
+        "id": 4,
+        "gridPos": {"x": 12, "y": 8, "w": 12, "h": 10},
+        "type": "timeseries",
+        "title": "RAM Usage % Over Time",
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "custom": {"lineWidth": 1, "fillOpacity": 5},
+            "min": 0,
+            "max": 100
+          }
+        },
+        "targets": [{
+          "datasource": {"uid": "cfecbpgdhs5j4b"},
+          "refId": "A",
+          "query": "from(bucket: \"netdata\") |> range(start: -1h) |> filter(fn: (r) => r._measurement == \"node_memory\" and r._field == \"ram_used_pct\") |> aggregateWindow(every: 1m, fn: mean, createEmpty: false) |> group(columns: [\"node_name\"])"
+        }]
+      },
+      {
+        "id": 5,
+        "gridPos": {"x": 0, "y": 18, "w": 12, "h": 10},
+        "type": "timeseries",
+        "title": "Network Received — All Nodes (kbps)",
+        "fieldConfig": {
+          "defaults": {
+            "unit": "Kbits",
+            "custom": {"lineWidth": 1, "fillOpacity": 5}
+          }
+        },
+        "targets": [{
+          "datasource": {"uid": "cfecbpgdhs5j4b"},
+          "refId": "A",
+          "query": "from(bucket: \"netdata\") |> range(start: -1h) |> filter(fn: (r) => r._measurement == \"node_network\" and r._field == \"net_received_kbps\") |> aggregateWindow(every: 1m, fn: mean, createEmpty: false) |> group(columns: [\"node_name\"])"
+        }]
+      },
+      {
+        "id": 6,
+        "gridPos": {"x": 12, "y": 18, "w": 12, "h": 10},
+        "type": "timeseries",
+        "title": "Network Sent — All Nodes (kbps)",
+        "fieldConfig": {
+          "defaults": {
+            "unit": "Kbits",
+            "custom": {"lineWidth": 1, "fillOpacity": 5}
+          }
+        },
+        "targets": [{
+          "datasource": {"uid": "cfecbpgdhs5j4b"},
+          "refId": "A",
+          "query": "from(bucket: \"netdata\") |> range(start: -1h) |> filter(fn: (r) => r._measurement == \"node_network\" and r._field == \"net_sent_kbps\") |> aggregateWindow(every: 1m, fn: mean, createEmpty: false) |> group(columns: [\"node_name\"])"
+        }]
+      },
+      {
+        "id": 7,
+        "gridPos": {"x": 0, "y": 28, "w": 12, "h": 10},
+        "type": "timeseries",
+        "title": "System Load (1min) — All Nodes",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {"lineWidth": 1, "fillOpacity": 5}
+          }
+        },
+        "targets": [{
+          "datasource": {"uid": "cfecbpgdhs5j4b"},
+          "refId": "A",
+          "query": "from(bucket: \"netdata\") |> range(start: -1h) |> filter(fn: (r) => r._measurement == \"node_load\" and r._field == \"load1\") |> aggregateWindow(every: 1m, fn: mean, createEmpty: false) |> group(columns: [\"node_name\"])"
+        }]
+      },
+      {
+        "id": 8,
+        "gridPos": {"x": 12, "y": 28, "w": 12, "h": 10},
+        "type": "timeseries",
+        "title": "Disk I/O — All Nodes",
+        "fieldConfig": {
+          "defaults": {
+            "unit": "KiBs",
+            "custom": {"lineWidth": 1, "fillOpacity": 5}
+          }
+        },
+        "targets": [
+          {
+            "datasource": {"uid": "cfecbpgdhs5j4b"},
+            "refId": "Reads",
+            "query": "from(bucket: \"netdata\") |> range(start: -1h) |> filter(fn: (r) => r._measurement == \"node_disk_io\" and r._field == \"io_reads_kbs\") |> aggregateWindow(every: 1m, fn: mean, createEmpty: false) |> group(columns: [\"node_name\"])"
+          },
+          {
+            "datasource": {"uid": "cfecbpgdhs5j4b"},
+            "refId": "Writes",
+            "query": "from(bucket: \"netdata\") |> range(start: -1h) |> filter(fn: (r) => r._measurement == \"node_disk_io\" and r._field == \"io_writes_kbs\") |> map(fn: (r) => ({r with _value: r._value * -1.0})) |> aggregateWindow(every: 1m, fn: mean, createEmpty: false) |> group(columns: [\"node_name\"])"
+          }
+        ]
+      },
+      {
+        "id": 9,
+        "gridPos": {"x": 0, "y": 38, "w": 24, "h": 10},
+        "type": "table",
+        "title": "Disk Space — All Nodes",
+        "options": {
+          "sortBy": [{"displayName": "Used %", "desc": true}]
+        },
+        "fieldConfig": {
+          "overrides": [
+            {
+              "matcher": {"id": "byName", "options": "Used %"},
+              "properties": [
+                {"id": "unit", "value": "percent"},
+                {"id": "custom.displayMode", "value": "gradient-gauge"},
+                {"id": "min", "value": 0},
+                {"id": "max", "value": 100},
+                {"id": "thresholds", "value": {
+                  "steps": [{"color":"green","value":null},{"color":"yellow","value":70},{"color":"red","value":90}]
+                }}
+              ]
+            }
+          ]
+        },
+        "transformations": [
+          {
+            "id": "organize",
+            "options": {
+              "renameByName": {
+                "node_name": "Node",
+                "mountpoint": "Mount",
+                "disk_avail_gb": "Available (GB)",
+                "disk_used_gb": "Used (GB)",
+                "disk_used_pct": "Used %"
+              },
+              "excludeByName": {"Time": true, "node_id": true, "os": true, "_start": true, "_stop": true, "Result": true, "table": true}
+            }
+          }
+        ],
+        "targets": [{
+          "datasource": {"uid": "cfecbpgdhs5j4b"},
+          "refId": "A",
+          "query": "from(bucket: \"netdata\") |> range(start: -2m) |> filter(fn: (r) => r._measurement == \"node_disk_space\") |> last() |> pivot(rowKey: [\"node_name\", \"mountpoint\"], columnKey: [\"_field\"], valueColumn: \"_value\")"
+        }]
+      }
+    ]
+  },
+  "overwrite": false,
+  "message": "Infrastructure metrics — CPU, RAM, network, disk, load"
+}
