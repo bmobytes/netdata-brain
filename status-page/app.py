@@ -82,7 +82,24 @@ def node_type_icon(node):
     return "❓"
 
 
-HTML_TEMPLATE = """<!DOCTYPE html>
+HTML_TEMPLATE = """
+{% macro render_node(node) %}
+{% set status = node._status %}
+{% set alarm = node.alarmCounters or {} %}
+<div class="node {{ status }}">
+  <div class="dot {{ status }}"></div>
+  <div class="node-info">
+    <div class="node-name">{{ node_type_icon(node) }} {{ node.name }}</div>
+    <div class="node-meta">{{ node.osName or node.os }} &nbsp;•&nbsp; {{ node.cpus }}c / {{ node.memory }}</div>
+    <div class="badges">
+      {% if alarm.critical > 0 %}<span class="badge crit">{{ alarm.critical }} critical</span>{% endif %}
+      {% if alarm.warning > 0 %}<span class="badge warn">{{ alarm.warning }} warning</span>{% endif %}
+      <span class="badge type">{{ node._type }}</span>
+    </div>
+  </div>
+</div>
+{% endmacro %}
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -202,24 +219,6 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 {% endif %}
 
 <p class="footer">netdata-brain status page &nbsp;•&nbsp; {{ total }} nodes total</p>
-
-{% macro render_node(node) %}
-{% set status = node._status %}
-{% set alarm = node.alarmCounters or {} %}
-{% set labels = node.hostLabels or {} %}
-<div class="node {{ status }}">
-  <div class="dot {{ status }}"></div>
-  <div class="node-info">
-    <div class="node-name">{{ node_type_icon(node) }} {{ node.name }}</div>
-    <div class="node-meta">{{ node.osName or node.os }} &nbsp;•&nbsp; {{ node.cpus }}c / {{ node.memory }}</div>
-    <div class="badges">
-      {% if alarm.critical > 0 %}<span class="badge crit">{{ alarm.critical }} critical</span>{% endif %}
-      {% if alarm.warning > 0 %}<span class="badge warn">{{ alarm.warning }} warning</span>{% endif %}
-      <span class="badge type">{{ node._type }}</span>
-    </div>
-  </div>
-</div>
-{% endmacro %}
 </body>
 </html>
 """
