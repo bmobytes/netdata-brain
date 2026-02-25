@@ -5,7 +5,7 @@ Writes node status metrics as time-series data.
 
 import logging
 from datetime import datetime, timezone
-from influxdb_client import InfluxDBClient, Point, WritePrecision
+from influxdb_client import InfluxDBClient, Point
 from influxdb_client.client.write_api import SYNCHRONOUS
 from collector import NodeInfo
 
@@ -53,7 +53,7 @@ class InfluxWriter:
                 .field("critical_count", node.critical_count)
                 .field("cpu_count", node.cpus)
                 .field("memory_bytes", _parse_memory_bytes(node.memory))
-                .time(now, WritePrecision.SECONDS)
+                .time(now, "s")
             )
             points.append(p)
 
@@ -79,7 +79,7 @@ class InfluxWriter:
             .field("stale_nodes", stale)
             .field("total_critical_alerts", total_critical)
             .field("total_warning_alerts", total_warning)
-            .time(now, WritePrecision.SECONDS)
+            .time(now, "s")
         )
 
         try:
