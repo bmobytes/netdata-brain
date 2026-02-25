@@ -1,0 +1,6 @@
+.env
+*.pyc
+__pycache__/
+*.egg-info/
+.DS_Store
+traefik/acme.json

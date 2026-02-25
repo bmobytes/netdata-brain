@@ -1,0 +1,99 @@
+services:
+
+  # ── InfluxDB ────────────────────────────────────────────────────────────────
+  influxdb:
+    image: influxdb:2.7
+    container_name: influxdb
+    restart: unless-stopped
+    ports:
+      - "8086:8086"
+    volumes:
+      - influxdb-data:/var/lib/influxdb2
+      - influxdb-config:/etc/influxdb2
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=${INFLUXDB_USER}
+      - DOCKER_INFLUXDB_INIT_PASSWORD=${INFLUXDB_PASSWORD}
+      - DOCKER_INFLUXDB_INIT_ORG=${INFLUXDB_ORG}
+      - DOCKER_INFLUXDB_INIT_BUCKET=${INFLUXDB_BUCKET}
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=${INFLUXDB_TOKEN}
+    networks:
+      - bmo-net
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.influxdb.rule=Host(`influxdb.${DOMAIN}`)"
+      - "traefik.http.routers.influxdb.entrypoints=web"
+      - "traefik.http.services.influxdb.loadbalancer.server.port=8086"
+
+  # ── Grafana ─────────────────────────────────────────────────────────────────
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+      - "3001:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_ROOT_URL=http://grafana.${DOMAIN}
+    networks:
+      - bmo-net
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.grafana.rule=Host(`grafana.${DOMAIN}`)"
+      - "traefik.http.routers.grafana.entrypoints=web"
+      - "traefik.http.services.grafana.loadbalancer.server.port=3000"
+
+  # ── netdata-brain (poller + alerter) ────────────────────────────────────────
+  netdata-brain:
+    build: ./netdata-brain
+    container_name: netdata-brain
+    restart: unless-stopped
+    environment:
+      - NETDATA_API=${NETDATA_API}
+      - NETDATA_SPACE_ID=${NETDATA_SPACE_ID}
+      - NETDATA_ROOM_ID=${NETDATA_ROOM_ID}
+      - INFLUXDB_URL=http://influxdb:8086
+      - INFLUXDB_TOKEN=${INFLUXDB_TOKEN}
+      - INFLUXDB_ORG=${INFLUXDB_ORG}
+      - INFLUXDB_BUCKET=${INFLUXDB_BUCKET}
+      - DISCORD_WEBHOOK=${DISCORD_WEBHOOK}
+      - POLL_INTERVAL=${POLL_INTERVAL:-60}
+      - DAILY_DIGEST_HOUR=${DAILY_DIGEST_HOUR:-9}
+    depends_on:
+      - influxdb
+    networks:
+      - bmo-net
+
+  # ── Status Page ─────────────────────────────────────────────────────────────
+  status-page:
+    build: ./status-page
+    container_name: status-page
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - NETDATA_API=${NETDATA_API}
+      - NETDATA_SPACE_ID=${NETDATA_SPACE_ID}
+      - NETDATA_ROOM_ID=${NETDATA_ROOM_ID}
+      - CACHE_SECONDS=${CACHE_SECONDS:-30}
+    networks:
+      - bmo-net
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.status.rule=Host(`status.${DOMAIN}`)"
+      - "traefik.http.routers.status.entrypoints=web"
+      - "traefik.http.services.status.loadbalancer.server.port=8080"
+
+networks:
+  bmo-net:
+    external: true
+    name: bmo-net
+
+volumes:
+  influxdb-data:
+  influxdb-config:
+  grafana-data:
