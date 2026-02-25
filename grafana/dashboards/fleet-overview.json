@@ -1,0 +1,309 @@
+{
+  "id": 143829237190656,
+  "panels": [
+    {
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "colorMode": "none",
+        "graphMode": "none"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"netdata\") |> range(start: -2m) |> filter(fn: (r) => r._measurement == \"fleet_summary\" and r._field == \"total_nodes\") |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Total Nodes",
+      "type": "stat"
+    },
+    {
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 4,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "thresholds": {
+          "steps": [
+            {
+              "color": "green",
+              "value": null
+            }
+          ]
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"netdata\") |> range(start: -2m) |> filter(fn: (r) => r._measurement == \"fleet_summary\" and r._field == \"reachable_nodes\") |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Online",
+      "type": "stat"
+    },
+    {
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 8,
+        "y": 0
+      },
+      "id": 3,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "thresholds": {
+          "steps": [
+            {
+              "color": "green",
+              "value": null
+            },
+            {
+              "color": "red",
+              "value": 1
+            }
+          ]
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"netdata\") |> range(start: -2m) |> filter(fn: (r) => r._measurement == \"fleet_summary\" and r._field == \"stale_nodes\") |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Offline / Stale",
+      "type": "stat"
+    },
+    {
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 12,
+        "y": 0
+      },
+      "id": 4,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "thresholds": {
+          "steps": [
+            {
+              "color": "green",
+              "value": null
+            },
+            {
+              "color": "orange",
+              "value": 1
+            },
+            {
+              "color": "red",
+              "value": 3
+            }
+          ]
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"netdata\") |> range(start: -2m) |> filter(fn: (r) => r._measurement == \"fleet_summary\" and r._field == \"total_critical_alerts\") |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Critical Alerts",
+      "type": "stat"
+    },
+    {
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 16,
+        "y": 0
+      },
+      "id": 5,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "thresholds": {
+          "steps": [
+            {
+              "color": "green",
+              "value": null
+            },
+            {
+              "color": "orange",
+              "value": 1
+            }
+          ]
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"netdata\") |> range(start: -2m) |> filter(fn: (r) => r._measurement == \"fleet_summary\" and r._field == \"total_warning_alerts\") |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Warning Alerts",
+      "type": "stat"
+    },
+    {
+      "gridPos": {
+        "h": 2,
+        "w": 24,
+        "x": 0,
+        "y": 4
+      },
+      "id": 6,
+      "options": {
+        "content": "## Node Status",
+        "mode": "markdown"
+      },
+      "title": "",
+      "type": "text"
+    },
+    {
+      "gridPos": {
+        "h": 12,
+        "w": 24,
+        "x": 0,
+        "y": 6
+      },
+      "id": 7,
+      "options": {
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "critical_count"
+          }
+        ]
+      },
+      "targets": [
+        {
+          "datasource": {
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"netdata\") |> range(start: -2m) |> filter(fn: (r) => r._measurement == \"node_status\" and (r._field == \"critical_count\" or r._field == \"warning_count\" or r._field == \"is_reachable\")) |> last() |> pivot(rowKey: [\"node_name\", \"os\", \"node_type\", \"state\"], columnKey: [\"_field\"], valueColumn: \"_value\")",
+          "refId": "A"
+        }
+      ],
+      "title": "All Nodes",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Result": true,
+              "Time": true,
+              "_start": true,
+              "_stop": true,
+              "node_id": true,
+              "table": true
+            },
+            "renameByName": {
+              "critical_count": "Critical",
+              "node_name": "Node",
+              "node_type": "Type",
+              "os": "OS",
+              "state": "State",
+              "warning_count": "Warning"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "lineWidth": 2
+          }
+        }
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 0,
+        "y": 18
+      },
+      "id": 8,
+      "targets": [
+        {
+          "datasource": {
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"netdata\") |> range(start: -24h) |> filter(fn: (r) => r._measurement == \"fleet_summary\" and r._field == \"reachable_nodes\") |> aggregateWindow(every: 5m, fn: last)",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"netdata\") |> range(start: -24h) |> filter(fn: (r) => r._measurement == \"fleet_summary\" and r._field == \"stale_nodes\") |> aggregateWindow(every: 5m, fn: last)",
+          "refId": "B"
+        }
+      ],
+      "title": "Fleet Health Over Time",
+      "type": "timeseries"
+    },
+    {
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 12,
+        "y": 18
+      },
+      "id": 9,
+      "targets": [
+        {
+          "datasource": {
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"netdata\") |> range(start: -24h) |> filter(fn: (r) => r._measurement == \"fleet_summary\" and r._field == \"total_critical_alerts\") |> aggregateWindow(every: 5m, fn: last)",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"netdata\") |> range(start: -24h) |> filter(fn: (r) => r._measurement == \"fleet_summary\" and r._field == \"total_warning_alerts\") |> aggregateWindow(every: 5m, fn: last)",
+          "refId": "B"
+        }
+      ],
+      "title": "Active Alerts Over Time",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "1m",
+  "tags": [
+    "netdata",
+    "fleet"
+  ],
+  "timezone": "browser",
+  "title": "Bartos Cloud \u2014 Fleet Overview",
+  "uid": "f8824517-407a-4e02-ba4b-6217a3658cff",
+  "version": 1
+}

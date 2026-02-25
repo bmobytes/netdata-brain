@@ -1,0 +1,74 @@
+{
+  "dashboard": {
+    "title": "Bartos Cloud — Node Detail",
+    "tags": ["netdata", "nodes"],
+    "timezone": "browser",
+    "refresh": "1m",
+    "templating": {
+      "list": [{
+        "name": "node",
+        "type": "query",
+        "label": "Node",
+        "datasource": {"uid": "cfecbpgdhs5j4b"},
+        "definition": "import \"influxdata/influxdb/schema\" schema.tagValues(bucket: \"netdata\", tag: \"node_name\")",
+        "query": {
+          "query": "import \"influxdata/influxdb/schema\" schema.tagValues(bucket: \"netdata\", tag: \"node_name\")",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 2,
+        "sort": 1
+      }]
+    },
+    "panels": [
+      {
+        "id": 1, "gridPos": {"x":0,"y":0,"w":6,"h":4},
+        "type": "stat", "title": "Critical Alerts",
+        "options": {"colorMode": "background", "graphMode": "none"},
+        "fieldConfig": {"defaults": {"thresholds": {"steps": [{"color":"green","value":null},{"color":"red","value":1}]}}},
+        "targets": [{"datasource": {"uid": "cfecbpgdhs5j4b"}, "refId": "A",
+          "query": "from(bucket: \"netdata\") |> range(start: -2m) |> filter(fn: (r) => r._measurement == \"node_status\" and r._field == \"critical_count\" and r.node_name == \"${node}\") |> last()"
+        }]
+      },
+      {
+        "id": 2, "gridPos": {"x":6,"y":0,"w":6,"h":4},
+        "type": "stat", "title": "Warning Alerts",
+        "options": {"colorMode": "background", "graphMode": "none"},
+        "fieldConfig": {"defaults": {"thresholds": {"steps": [{"color":"green","value":null},{"color":"orange","value":1}]}}},
+        "targets": [{"datasource": {"uid": "cfecbpgdhs5j4b"}, "refId": "A",
+          "query": "from(bucket: \"netdata\") |> range(start: -2m) |> filter(fn: (r) => r._measurement == \"node_status\" and r._field == \"warning_count\" and r.node_name == \"${node}\") |> last()"
+        }]
+      },
+      {
+        "id": 3, "gridPos": {"x":12,"y":0,"w":6,"h":4},
+        "type": "stat", "title": "Reachable",
+        "options": {"colorMode": "background", "graphMode": "none"},
+        "fieldConfig": {"defaults": {"thresholds": {"steps": [{"color":"red","value":null},{"color":"green","value":1}]}}},
+        "targets": [{"datasource": {"uid": "cfecbpgdhs5j4b"}, "refId": "A",
+          "query": "from(bucket: \"netdata\") |> range(start: -2m) |> filter(fn: (r) => r._measurement == \"node_status\" and r._field == \"is_reachable\" and r.node_name == \"${node}\") |> last()"
+        }]
+      },
+      {
+        "id": 4, "gridPos": {"x":0,"y":4,"w":24,"h":10},
+        "type": "timeseries", "title": "Alert History — Critical & Warning",
+        "fieldConfig": {"defaults": {"custom": {"lineWidth": 2, "fillOpacity": 10}}},
+        "targets": [
+          {"datasource": {"uid": "cfecbpgdhs5j4b"}, "refId": "Critical",
+            "query": "from(bucket: \"netdata\") |> range(start: -24h) |> filter(fn: (r) => r._measurement == \"node_status\" and r._field == \"critical_count\" and r.node_name == \"${node}\") |> aggregateWindow(every: 5m, fn: last)"
+          },
+          {"datasource": {"uid": "cfecbpgdhs5j4b"}, "refId": "Warning",
+            "query": "from(bucket: \"netdata\") |> range(start: -24h) |> filter(fn: (r) => r._measurement == \"node_status\" and r._field == \"warning_count\" and r.node_name == \"${node}\") |> aggregateWindow(every: 5m, fn: last)"
+          }
+        ]
+      },
+      {
+        "id": 5, "gridPos": {"x":0,"y":14,"w":24,"h":8},
+        "type": "timeseries", "title": "Reachability (7 days)",
+        "targets": [{"datasource": {"uid": "cfecbpgdhs5j4b"}, "refId": "A",
+          "query": "from(bucket: \"netdata\") |> range(start: -7d) |> filter(fn: (r) => r._measurement == \"node_status\" and r._field == \"is_reachable\" and r.node_name == \"${node}\") |> aggregateWindow(every: 15m, fn: last)"
+        }]
+      }
+    ]
+  },
+  "overwrite": false,
+  "message": "Node detail dashboard with variable selector"
+}
