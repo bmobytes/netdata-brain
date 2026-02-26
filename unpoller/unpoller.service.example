@@ -1,0 +1,17 @@
+# Place at: ~/.config/systemd/user/unpoller.service
+# Enable:   systemctl --user enable --now unpoller
+
+[Unit]
+Description=UniFi Poller — writes UniFi metrics to InfluxDB
+After=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/home/YOUR_USER/.local/bin/unpoller --config /home/YOUR_USER/.config/unpoller/up.conf
+Restart=on-failure
+RestartSec=15
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target

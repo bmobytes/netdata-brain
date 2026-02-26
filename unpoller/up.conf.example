@@ -1,0 +1,32 @@
+# unpoller v2.34.0 config
+# Runs as systemd user service on openclaw (192.168.140.209), not on deploy VM.
+# Deploy VM cannot reach UniFi controller; openclaw is on the services /23.
+#
+# Copy to /home/<user>/.config/unpoller/up.conf and populate secrets.
+# chmod 600 the file — it contains the API key.
+
+[poller]
+  debug   = false
+  quiet   = false
+  plugins = []
+
+[unifi.defaults]
+  url        = "https://192.168.140.1"   # UCG-CR (UDM) — gateway for services /23
+  api_key    = "YOUR_UNIFI_API_KEY_HERE"  # Settings → System → API → Create API Key
+  verify_ssl = false                      # self-signed cert on UCG-CR
+  save_ids        = false
+  save_alarms     = true
+  save_anomalies  = false
+  save_dpi        = false
+
+[influxdb]
+  url        = "http://192.168.148.185:8086"  # deploy VM InfluxDB
+  db         = "unifi"                         # bucket name
+  org        = "bartos"
+  auth_token = "YOUR_INFLUXDB_TOKEN"
+  v2         = true
+  interval   = "30s"
+  verify_ssl = false
+
+[prometheus]
+  disable = true
