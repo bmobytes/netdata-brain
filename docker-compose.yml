@@ -80,6 +80,13 @@ services:
       - NETDATA_SPACE_ID=${NETDATA_SPACE_ID}
       - NETDATA_ROOM_ID=${NETDATA_ROOM_ID}
       - CACHE_SECONDS=${CACHE_SECONDS:-30}
+      # InfluxDB — for alarm details and UniFi device data
+      - INFLUX_URL=http://influxdb:8086
+      - INFLUX_TOKEN=${INFLUXDB_TOKEN}
+      - INFLUX_ORG=${INFLUXDB_ORG}
+      - INFLUX_BUCKET=${INFLUXDB_BUCKET}
+    depends_on:
+      - influxdb
     networks:
       - bmo-net
     labels:

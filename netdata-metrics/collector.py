@@ -11,6 +11,7 @@ import os
 import signal
 import sys
 import time
+import urllib3
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from typing import Optional
@@ -18,6 +19,8 @@ from typing import Optional
 import requests
 from influxdb_client import InfluxDBClient, Point
 from influxdb_client.client.write_api import SYNCHRONOUS
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -50,6 +53,11 @@ CLOUD_BASE = "https://app.netdata.cloud/api/v2"
 
 # ── SNMP node / switch config ──────────────────────────────────────────────────
 SNMP_NODE_IP = os.environ.get("SNMP_NODE_IP", "192.168.140.134")
+
+# ── UniFi config ───────────────────────────────────────────────────────────────
+UNIFI_URL     = os.environ.get("UNIFI_URL", "https://192.168.140.1")
+UNIFI_API_KEY = os.environ.get("UNIFI_API", "")
+UNIFI_SITE    = os.environ.get("UNIFI_SITE", "default")
 
 # Prometheus-via-Netdata switch sources on the SNMP node.
 # key = device name (as it appears in prometheus_ chart prefix), value = human label.
@@ -522,6 +530,98 @@ def collect_switch_device(device: str, device_label: str,
     return device_label, all_points
 
 
+# ── Alarm collection ───────────────────────────────────────────────────────────
+def collect_alarms(nodes: list[dict]) -> list[Point]:
+    """
+    Poll each reachable node's local alarm API and write active alarms to InfluxDB.
+    Measurement: node_alarms
+    Tags: node_name, alarm_name
+    Fields: severity (1=warn, 2=crit), silenced (0/1), summary (string), value (float)
+    """
+    all_points = []
+    ts = datetime.now(timezone.utc)
+
+    for node in nodes:
+        ip   = node["ip"]
+        name = node["name"]
+        try:
+            resp = requests.get(
+                f"http://{ip}:{AGENT_PORT}/api/v1/alarms",
+                params={"active": "true"},
+                timeout=AGENT_TIMEOUT,
+            )
+            if resp.status_code != 200:
+                continue
+            data   = resp.json()
+            alarms = data.get("alarms", {})
+            for alarm_key, alarm in alarms.items():
+                status = alarm.get("status", "")
+                if status not in ("WARNING", "CRITICAL"):
+                    continue
+                severity = 2 if status == "CRITICAL" else 1
+                summary  = alarm.get("summary") or alarm.get("info") or alarm.get("name", alarm_key)
+                p = (
+                    Point("node_alarms")
+                    .tag("node_name",  name)
+                    .tag("alarm_name", alarm.get("name", alarm_key))
+                    .field("severity", severity)
+                    .field("silenced", int(bool(alarm.get("silenced", False))))
+                    .field("summary",  summary[:200])          # cap string field length
+                    .field("value",    float(alarm.get("value") or 0))
+                    .time(ts, "s")
+                )
+                all_points.append(p)
+        except Exception as e:
+            logger.debug(f"Alarm fetch failed for {name} ({ip}): {e}")
+
+    logger.debug(f"Alarms: collected {len(all_points)} active alarm points")
+    return all_points
+
+
+# ── UniFi device collection ────────────────────────────────────────────────────
+def collect_unifi_devices() -> list[Point]:
+    """
+    Poll the UniFi controller for device status and write to InfluxDB.
+    Measurement: unifi_device
+    Tags: mac, name, model, device_type
+    Fields: state (0/1), uptime (seconds), clients (int)
+    """
+    if not UNIFI_API_KEY:
+        return []
+
+    ts = datetime.now(timezone.utc)
+    try:
+        resp = requests.get(
+            f"{UNIFI_URL}/proxy/network/api/s/{UNIFI_SITE}/stat/device",
+            headers={"X-API-KEY": UNIFI_API_KEY},
+            verify=False,
+            timeout=10,
+        )
+        resp.raise_for_status()
+        devices = resp.json().get("data", [])
+
+        points = []
+        for dev in devices:
+            p = (
+                Point("unifi_device")
+                .tag("mac",         dev.get("mac", ""))
+                .tag("name",        dev.get("name", dev.get("mac", "")))
+                .tag("model",       dev.get("model", ""))
+                .tag("device_type", dev.get("type", ""))
+                .field("state",   int(dev.get("state",   0)))
+                .field("uptime",  int(dev.get("uptime",  0)))
+                .field("clients", int(dev.get("num_sta", 0)))
+                .time(ts, "s")
+            )
+            points.append(p)
+
+        logger.debug(f"UniFi: collected {len(points)} device points")
+        return points
+    except Exception as e:
+        logger.error(f"UniFi device collection failed: {e}")
+        return []
+
+
 # ── Main loop ──────────────────────────────────────────────────────────────────
 def main():
     logger.info("=" * 60)
@@ -611,6 +711,14 @@ def main():
                 all_points.extend(pts)
                 switch_points += len(pts)
 
+        # Collect active alarms from all nodes
+        alarm_pts = collect_alarms(nodes)
+        all_points.extend(alarm_pts)
+
+        # Collect UniFi device status
+        unifi_pts = collect_unifi_devices() if UNIFI_API_KEY else []
+        all_points.extend(unifi_pts)
+
         # Write batch to InfluxDB
         if all_points:
             try:
@@ -618,7 +726,9 @@ def main():
                 logger.info(
                     f"Wrote {len(all_points)} points: "
                     f"{ok_count}/{len(nodes)} nodes, "
-                    f"{switch_points} switch port metrics"
+                    f"{switch_points} switch port pts, "
+                    f"{len(alarm_pts)} alarm pts, "
+                    f"{len(unifi_pts)} unifi pts"
                 )
             except Exception as e:
                 logger.error(f"InfluxDB write failed: {e}")
