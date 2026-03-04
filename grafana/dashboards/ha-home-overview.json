@@ -1,0 +1,1608 @@
+{
+  "__inputs": [],
+  "__requires": [],
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "🏠 Home Overview",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "type": "row",
+      "title": "🌤 Current Conditions",
+      "id": 1,
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "panels": []
+    },
+    {
+      "type": "stat",
+      "title": "🌡 Outdoor Temp",
+      "id": 2,
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 0,
+        "y": 1
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "°F",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 65
+              },
+              {
+                "color": "yellow",
+                "value": 78
+              },
+              {
+                "color": "red",
+                "value": 85
+              }
+            ]
+          },
+          "mappings": [],
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"bartos-homeassistant\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r._measurement == \"°F\" and r._field == \"value\" and r.entity_id == \"lansing_st_weather_temp\")\n  |> last()",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "🌬 Feels Like",
+      "id": 3,
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 4,
+        "y": 1
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "°F",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 65
+              },
+              {
+                "color": "yellow",
+                "value": 78
+              },
+              {
+                "color": "red",
+                "value": 85
+              }
+            ]
+          },
+          "mappings": [],
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"bartos-homeassistant\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r._measurement == \"°F\" and r._field == \"value\" and r.entity_id == \"lansing_st_weather_feelslike\")\n  |> last()",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "🏠 Indoor Temp",
+      "id": 4,
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 8,
+        "y": 1
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "°F",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 65
+              },
+              {
+                "color": "yellow",
+                "value": 78
+              },
+              {
+                "color": "red",
+                "value": 85
+              }
+            ]
+          },
+          "mappings": [],
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"bartos-homeassistant\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r._measurement == \"°F\" and r._field == \"value\" and r.entity_id == \"smart_thermostat_effective_temperature_fahrenheit\")\n  |> last()",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "💧 Indoor Humidity",
+      "id": 5,
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 12,
+        "y": 1
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "%",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "mappings": [],
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"bartos-homeassistant\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r._measurement == \"%\" and r._field == \"value\" and r.entity_id == \"average_house_humidity\")\n  |> last()",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "⚡ Total Power",
+      "id": 6,
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 16,
+        "y": 1
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "watt",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1500
+              },
+              {
+                "color": "red",
+                "value": 2000
+              }
+            ]
+          },
+          "mappings": [],
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"bartos-homeassistant\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r._measurement == \"W\" and r._field == \"value\" and r.entity_id == \"emporia_01_total_power\")\n  |> last()",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "🌡 HVAC Action",
+      "id": 7,
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 20,
+        "y": 1
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "string",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "mappings": [],
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"bartos-homeassistant\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r.domain == \"climate\" and r._field == \"hvac_action_str\" and r.entity_id == \"smart_thermostat\")\n  |> last()",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "row",
+      "title": "🏠 Room Occupancy",
+      "id": 8,
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 5
+      },
+      "panels": []
+    },
+    {
+      "type": "stat",
+      "title": "Bathroom",
+      "id": 9,
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 0,
+        "y": 6
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "⬜ Empty",
+                  "color": "gray",
+                  "index": 0
+                },
+                "1": {
+                  "text": "🟢 Occupied",
+                  "color": "green",
+                  "index": 1
+                }
+              }
+            }
+          ],
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"bartos-homeassistant\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r.domain == \"binary_sensor\" and r._field == \"value\" and r.entity_id == \"bathroom_occupancy\")\n  |> last()",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Bedroom",
+      "id": 10,
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 4,
+        "y": 6
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "⬜ Empty",
+                  "color": "gray",
+                  "index": 0
+                },
+                "1": {
+                  "text": "🟢 Occupied",
+                  "color": "green",
+                  "index": 1
+                }
+              }
+            }
+          ],
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"bartos-homeassistant\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r.domain == \"binary_sensor\" and r._field == \"value\" and r.entity_id == \"bedroom_occupancy\")\n  |> last()",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Living Room",
+      "id": 11,
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 8,
+        "y": 6
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "⬜ Empty",
+                  "color": "gray",
+                  "index": 0
+                },
+                "1": {
+                  "text": "🟢 Occupied",
+                  "color": "green",
+                  "index": 1
+                }
+              }
+            }
+          ],
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"bartos-homeassistant\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r.domain == \"binary_sensor\" and r._field == \"value\" and r.entity_id == \"living_room_occupancy\")\n  |> last()",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Kitchen",
+      "id": 12,
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 12,
+        "y": 6
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "⬜ Empty",
+                  "color": "gray",
+                  "index": 0
+                },
+                "1": {
+                  "text": "🟢 Occupied",
+                  "color": "green",
+                  "index": 1
+                }
+              }
+            }
+          ],
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"bartos-homeassistant\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r.domain == \"binary_sensor\" and r._field == \"value\" and r.entity_id == \"kitchen_presence_presence\")\n  |> last()",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Office",
+      "id": 13,
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 16,
+        "y": 6
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "⬜ Empty",
+                  "color": "gray",
+                  "index": 0
+                },
+                "1": {
+                  "text": "🟢 Occupied",
+                  "color": "green",
+                  "index": 1
+                }
+              }
+            }
+          ],
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"bartos-homeassistant\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r.domain == \"binary_sensor\" and r._field == \"value\" and r.entity_id == \"office_occupancy\")\n  |> last()",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Basement",
+      "id": 14,
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 20,
+        "y": 6
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "⬜ Empty",
+                  "color": "gray",
+                  "index": 0
+                },
+                "1": {
+                  "text": "🟢 Occupied",
+                  "color": "green",
+                  "index": 1
+                }
+              }
+            }
+          ],
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"bartos-homeassistant\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r.domain == \"binary_sensor\" and r._field == \"value\" and r.entity_id == \"basement_occupancy\")\n  |> last()",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "row",
+      "title": "🔒 Security & Safety",
+      "id": 15,
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 10
+      },
+      "panels": []
+    },
+    {
+      "type": "stat",
+      "title": "🚪 Front Lock",
+      "id": 16,
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 0,
+        "y": 11
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "🔒 Locked",
+                  "color": "green",
+                  "index": 0
+                },
+                "1": {
+                  "text": "🔓 Unlocked",
+                  "color": "yellow",
+                  "index": 1
+                }
+              }
+            }
+          ],
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"bartos-homeassistant\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r.domain == \"lock\" and r._field == \"is_locked\" and r.entity_id == \"front_door\")\n  |> last()",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "🚪 Back Lock",
+      "id": 17,
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 3,
+        "y": 11
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "🔒 Locked",
+                  "color": "green",
+                  "index": 0
+                },
+                "1": {
+                  "text": "🔓 Unlocked",
+                  "color": "yellow",
+                  "index": 1
+                }
+              }
+            }
+          ],
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"bartos-homeassistant\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r.domain == \"lock\" and r._field == \"is_locked\" and r.entity_id == \"back_door\")\n  |> last()",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "🚪 Front Door",
+      "id": 18,
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 6,
+        "y": 11
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "🟢 Closed",
+                  "color": "green",
+                  "index": 0
+                },
+                "1": {
+                  "text": "🟡 Open",
+                  "color": "yellow",
+                  "index": 1
+                }
+              }
+            }
+          ],
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"bartos-homeassistant\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r.domain == \"binary_sensor\" and r._field == \"value\" and r.entity_id == \"front_door_contact_sensor_contact\")\n  |> last()",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "🚪 Back Door",
+      "id": 19,
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 9,
+        "y": 11
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "🟢 Closed",
+                  "color": "green",
+                  "index": 0
+                },
+                "1": {
+                  "text": "🟡 Open",
+                  "color": "yellow",
+                  "index": 1
+                }
+              }
+            }
+          ],
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"bartos-homeassistant\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r.domain == \"binary_sensor\" and r._field == \"value\" and r.entity_id == \"back_door_contact_sensor_contact\")\n  |> last()",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "🔥 Smoke",
+      "id": 20,
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 12,
+        "y": 11
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "✅ Clear",
+                  "color": "green",
+                  "index": 0
+                },
+                "1": {
+                  "text": "🚨 ALERT",
+                  "color": "red",
+                  "index": 1
+                }
+              }
+            }
+          ],
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"bartos-homeassistant\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r.domain == \"binary_sensor\" and r._field == \"value\" and r.entity_id == \"zcombo_g_smoke_co_alarm_smoke_detected\")\n  |> last()",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "☁ CO Alarm",
+      "id": 21,
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 15,
+        "y": 11
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "✅ Clear",
+                  "color": "green",
+                  "index": 0
+                },
+                "1": {
+                  "text": "🚨 ALERT",
+                  "color": "red",
+                  "index": 1
+                }
+              }
+            }
+          ],
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"bartos-homeassistant\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r.domain == \"binary_sensor\" and r._field == \"value\" and r.entity_id == \"zcombo_g_smoke_co_alarm_carbon_monoxide_detected\")\n  |> last()",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "💧 Water Leak",
+      "id": 22,
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 18,
+        "y": 11
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "✅ Clear",
+                  "color": "green",
+                  "index": 0
+                },
+                "1": {
+                  "text": "🚨 ALERT",
+                  "color": "red",
+                  "index": 1
+                }
+              }
+            }
+          ],
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"bartos-homeassistant\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r.domain == \"binary_sensor\" and r._field == \"value\" and r.entity_id == \"server_room_leak_detector_water_leak\")\n  |> last()",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "🔋 UPS Battery",
+      "id": 23,
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 21,
+        "y": 11
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "%",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 20
+              },
+              {
+                "color": "green",
+                "value": 50
+              }
+            ]
+          },
+          "mappings": [],
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"bartos-homeassistant\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r._measurement == \"%\" and r._field == \"value\" and r.entity_id == \"server_ups_battery_charge\")\n  |> last()",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "row",
+      "title": "📈 Power & Temperature History",
+      "id": 24,
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 15
+      },
+      "panels": []
+    },
+    {
+      "type": "timeseries",
+      "title": "🏠 Total Power (W)",
+      "id": 25,
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 16
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "watt",
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"bartos-homeassistant\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"W\" and r._field == \"value\" and (r.entity_id == \"emporia_01_total_power\"))",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "🌡 Indoor vs Outdoor Temp",
+      "id": 26,
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 16
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "°F",
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"bartos-homeassistant\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"°F\" and r._field == \"value\" and (r.entity_id == \"smart_thermostat_effective_temperature_fahrenheit\" or r.entity_id == \"lansing_st_weather_temp\" or r.entity_id == \"bedroom_temperature\" or r.entity_id == \"living_room_temperature\"))\n  |> map(fn: (r) => ({r with _field: r.entity_id}))",
+          "refId": "A"
+        }
+      ]
+    }
+  ],
+  "refresh": "1m",
+  "schemaVersion": 38,
+  "tags": [
+    "home-assistant",
+    "overview"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "America/Chicago",
+  "title": "🏠 Home Overview",
+  "uid": "ha-home-overview",
+  "version": 1
+}

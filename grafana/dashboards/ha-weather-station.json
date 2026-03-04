@@ -1,0 +1,1461 @@
+{
+  "__inputs": [],
+  "__requires": [],
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "🌤 Weather Station",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "type": "row",
+      "title": "🌤 Current Conditions",
+      "id": 1,
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "panels": []
+    },
+    {
+      "type": "stat",
+      "title": "🌡 Temperature",
+      "id": 2,
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 0,
+        "y": 1
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "°F",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 65
+              },
+              {
+                "color": "yellow",
+                "value": 78
+              },
+              {
+                "color": "red",
+                "value": 85
+              }
+            ]
+          },
+          "mappings": [],
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"bartos-homeassistant\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r._measurement == \"°F\" and r._field == \"value\" and r.entity_id == \"lansing_st_weather_temp\")\n  |> last()",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "🌬 Feels Like",
+      "id": 3,
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 4,
+        "y": 1
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "°F",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 65
+              },
+              {
+                "color": "yellow",
+                "value": 78
+              },
+              {
+                "color": "red",
+                "value": 85
+              }
+            ]
+          },
+          "mappings": [],
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"bartos-homeassistant\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r._measurement == \"°F\" and r._field == \"value\" and r.entity_id == \"lansing_st_weather_feelslike\")\n  |> last()",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "💧 Humidity",
+      "id": 4,
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 8,
+        "y": 1
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "%",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "mappings": [],
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"bartos-homeassistant\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r._measurement == \"%\" and r._field == \"value\" and r.entity_id == \"lansing_st_weather_humidity\")\n  |> last()",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "💨 Wind Speed",
+      "id": 5,
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 12,
+        "y": 1
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "velocityMph",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "mappings": [],
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"bartos-homeassistant\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r._measurement == \"mph\" and r._field == \"value\" and r.entity_id == \"lansing_st_weather_windspeed\")\n  |> last()",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "☀ Solar Rad",
+      "id": 6,
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 16,
+        "y": 1
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "wattM2",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "mappings": [],
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"bartos-homeassistant\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r._measurement == \"W/m²\" and r._field == \"value\" and r.entity_id == \"lansing_st_weather_solarradiation\")\n  |> last()",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "🔆 UV Index",
+      "id": 7,
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 20,
+        "y": 1
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "uvIndex",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "mappings": [],
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"bartos-homeassistant\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r._measurement == \"UV index\" and r._field == \"value\" and r.entity_id == \"lansing_st_weather_uv\")\n  |> last()",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "📊 Pressure (Rel)",
+      "id": 8,
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 0,
+        "y": 5
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "pressureInHg",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "mappings": [],
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"bartos-homeassistant\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r._measurement == \"inHg\" and r._field == \"value\" and r.entity_id == \"lansing_st_weather_baromrel\")\n  |> last()",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "🌡 Dew Point",
+      "id": 9,
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 4,
+        "y": 5
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "°F",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 65
+              },
+              {
+                "color": "yellow",
+                "value": 78
+              },
+              {
+                "color": "red",
+                "value": 85
+              }
+            ]
+          },
+          "mappings": [],
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"bartos-homeassistant\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r._measurement == \"°F\" and r._field == \"value\" and r.entity_id == \"lansing_st_weather_dewpoint\")\n  |> last()",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "🌬 Wind Gust",
+      "id": 10,
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 8,
+        "y": 5
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "velocityMph",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "mappings": [],
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"bartos-homeassistant\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r._measurement == \"mph\" and r._field == \"value\" and r.entity_id == \"lansing_st_weather_windgust\")\n  |> last()",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "💨 Max Daily Gust",
+      "id": 11,
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 12,
+        "y": 5
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "velocityMph",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "mappings": [],
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"bartos-homeassistant\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r._measurement == \"mph\" and r._field == \"value\" and r.entity_id == \"lansing_st_weather_maxdailygust\")\n  |> last()",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "🧭 Wind Dir",
+      "id": 12,
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 16,
+        "y": 5
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "degree",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "mappings": [],
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"bartos-homeassistant\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r._measurement == \"°\" and r._field == \"value\" and r.entity_id == \"lansing_st_weather_winddir\")\n  |> last()",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "🏠 Indoor Humidity",
+      "id": 13,
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 20,
+        "y": 5
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "%",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "mappings": [],
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"bartos-homeassistant\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r._measurement == \"%\" and r._field == \"value\" and r.entity_id == \"lansing_st_weather_humidityin\")\n  |> last()",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "row",
+      "title": "📈 Temperature History",
+      "id": 14,
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 9
+      },
+      "panels": []
+    },
+    {
+      "type": "timeseries",
+      "title": "🌡 Outdoor Temperature & Dewpoint",
+      "id": 15,
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 10
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "°F",
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"bartos-homeassistant\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"°F\" and r._field == \"value\" and (r.entity_id == \"lansing_st_weather_temp\" or r.entity_id == \"lansing_st_weather_feelslike\" or r.entity_id == \"lansing_st_weather_dewpoint\" or r.entity_id == \"lansing_st_weather_heatindex\"))\n  |> map(fn: (r) => ({r with _field: r.entity_id}))",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "row",
+      "title": "💧 Humidity & Pressure",
+      "id": 16,
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 19
+      },
+      "panels": []
+    },
+    {
+      "type": "timeseries",
+      "title": "💧 Outdoor Humidity",
+      "id": 17,
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 20
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "%",
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"bartos-homeassistant\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"%\" and r._field == \"value\" and (r.entity_id == \"lansing_st_weather_humidity\" or r.entity_id == \"lansing_st_weather_humidityin\"))\n  |> map(fn: (r) => ({r with _field: r.entity_id}))",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "📊 Barometric Pressure",
+      "id": 18,
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 20
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "pressureInHg",
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"bartos-homeassistant\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"inHg\" and r._field == \"value\" and (r.entity_id == \"lansing_st_weather_baromrel\" or r.entity_id == \"lansing_st_weather_baromabs\"))\n  |> map(fn: (r) => ({r with _field: r.entity_id}))",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "row",
+      "title": "💨 Wind",
+      "id": 19,
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 28
+      },
+      "panels": []
+    },
+    {
+      "type": "timeseries",
+      "title": "💨 Wind Speed & Gust",
+      "id": 20,
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 29
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "velocityMph",
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"bartos-homeassistant\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"mph\" and r._field == \"value\" and (r.entity_id == \"lansing_st_weather_windspeed\" or r.entity_id == \"lansing_st_weather_windgust\"))\n  |> map(fn: (r) => ({r with _field: r.entity_id}))",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "row",
+      "title": "🌧 Precipitation",
+      "id": 21,
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 37
+      },
+      "panels": []
+    },
+    {
+      "type": "stat",
+      "title": "☔ Hourly",
+      "id": 22,
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 0,
+        "y": 38
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "lengthIn",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "mappings": [],
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"bartos-homeassistant\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r._measurement == \"in\" and r._field == \"value\" and r.entity_id == \"lansing_st_weather_hourlyrain\")\n  |> last()",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "🌧 Daily",
+      "id": 23,
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 4,
+        "y": 38
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "lengthIn",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "mappings": [],
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"bartos-homeassistant\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r._measurement == \"in\" and r._field == \"value\" and r.entity_id == \"lansing_st_weather_dailyrain\")\n  |> last()",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "📅 Weekly",
+      "id": 24,
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 8,
+        "y": 38
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "lengthIn",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "mappings": [],
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"bartos-homeassistant\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r._measurement == \"in\" and r._field == \"value\" and r.entity_id == \"lansing_st_weather_weeklyrain\")\n  |> last()",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "🗓 Monthly",
+      "id": 25,
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 12,
+        "y": 38
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "lengthIn",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "mappings": [],
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"bartos-homeassistant\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r._measurement == \"in\" and r._field == \"value\" and r.entity_id == \"lansing_st_weather_monthlyrain\")\n  |> last()",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "📆 Yearly",
+      "id": 26,
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 16,
+        "y": 38
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "lengthIn",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "mappings": [],
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"bartos-homeassistant\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r._measurement == \"in\" and r._field == \"value\" and r.entity_id == \"lansing_st_weather_yearlyrain\")\n  |> last()",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "🌧 Hourly Rain Rate",
+      "id": 27,
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 20,
+        "y": 38
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "lengthIn",
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"bartos-homeassistant\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"in\" and r._field == \"value\" and (r.entity_id == \"lansing_st_weather_hourlyrain\" or r.entity_id == \"lansing_st_weather_dailyrain\"))\n  |> map(fn: (r) => ({r with _field: r.entity_id}))",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "row",
+      "title": "☀ Solar & UV",
+      "id": 28,
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 42
+      },
+      "panels": []
+    },
+    {
+      "type": "timeseries",
+      "title": "☀ Solar Radiation (W/m²)",
+      "id": 29,
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 43
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "wattM2",
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"bartos-homeassistant\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"W/m²\" and r._field == \"value\" and (r.entity_id == \"lansing_st_weather_solarradiation\"))",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "🔆 UV Index",
+      "id": 30,
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 43
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "uvIndex",
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"bartos-homeassistant\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"UV index\" and r._field == \"value\" and (r.entity_id == \"lansing_st_weather_uv\"))",
+          "refId": "A"
+        }
+      ]
+    }
+  ],
+  "refresh": "1m",
+  "schemaVersion": 38,
+  "tags": [
+    "home-assistant",
+    "weather"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "America/Chicago",
+  "title": "🌤 Weather Station",
+  "uid": "ha-weather-station",
+  "version": 1
+}
