@@ -1,421 +1,1250 @@
 {
   "uid": "plex-dashboard-01",
-  "title": "Plex — Media Server",
-  "tags": ["plex", "media"],
+  "title": "Plex \u2014 Media Server",
+  "tags": [
+    "plex",
+    "media"
+  ],
   "timezone": "browser",
   "schemaVersion": 38,
-  "version": 2,
-  "refresh": "60s",
-  "time": { "from": "now-6h", "to": "now" },
+  "version": 1,
+  "refresh": "30s",
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
   "panels": [
     {
-      "id": 100,
-      "type": "row",
-      "title": "Library Overview",
-      "collapsed": false,
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 }
-    },
-    {
       "id": 1,
-      "type": "stat",
-      "title": "Movies",
-      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 1 },
-      "datasource": { "type": "influxdb", "uid": "cfecbpgdhs5j4b" },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "short",
-          "decimals": 0,
-          "color": { "mode": "thresholds" },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [{ "color": "blue", "value": null }]
-          }
-        }
-      },
-      "options": {
-        "reduceOptions": { "calcs": ["lastNotNull"] },
-        "orientation": "auto",
-        "colorMode": "value",
-        "graphMode": "none",
-        "textMode": "auto"
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "datasource": { "type": "influxdb", "uid": "cfecbpgdhs5j4b" },
-          "query": "from(bucket: \"plex\")\n  |> range(start: -15m)\n  |> filter(fn: (r) => r._measurement == \"prometheus\" and r._field == \"plex_media_movies\")\n  |> last()"
-        }
-      ]
+      "title": "Server Info",
+      "type": "row",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 1
+      }
     },
     {
       "id": 2,
+      "title": "Plex Server",
       "type": "stat",
-      "title": "TV Episodes",
-      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 1 },
-      "datasource": { "type": "influxdb", "uid": "cfecbpgdhs5j4b" },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "short",
-          "decimals": 0,
-          "color": { "mode": "thresholds" },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [{ "color": "blue", "value": null }]
-          }
-        }
+      "gridPos": {
+        "x": 0,
+        "y": 1,
+        "w": 24,
+        "h": 4
       },
-      "options": {
-        "reduceOptions": { "calcs": ["lastNotNull"] },
-        "orientation": "auto",
-        "colorMode": "value",
-        "graphMode": "none",
-        "textMode": "auto"
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
       },
       "targets": [
         {
-          "refId": "A",
-          "datasource": { "type": "influxdb", "uid": "cfecbpgdhs5j4b" },
-          "query": "from(bucket: \"plex\")\n  |> range(start: -15m)\n  |> filter(fn: (r) => r._measurement == \"prometheus\" and r._field == \"plex_media_episodes\")\n  |> last()"
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"plex\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r._measurement == \"prometheus\" and r._field == \"server_info\")\n  |> last()\n  |> map(fn: (r) => ({r with _value: 1.0, _field: r.platform + \" \" + r.platform_version + \" \u2022 Plex \" + r.version}))",
+          "refId": "A"
         }
-      ]
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "name",
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "text": {
+          "titleSize": 28,
+          "valueSize": 18
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "#E5A00D",
+            "mode": "fixed"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#E5A00D",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      }
     },
     {
       "id": 3,
-      "type": "stat",
-      "title": "Music Artists",
-      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 1 },
-      "datasource": { "type": "influxdb", "uid": "cfecbpgdhs5j4b" },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "short",
-          "decimals": 0,
-          "color": { "mode": "thresholds" },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [{ "color": "purple", "value": null }]
-          }
-        }
-      },
-      "options": {
-        "reduceOptions": { "calcs": ["lastNotNull"] },
-        "orientation": "auto",
-        "colorMode": "value",
-        "graphMode": "none",
-        "textMode": "auto"
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "datasource": { "type": "influxdb", "uid": "cfecbpgdhs5j4b" },
-          "query": "from(bucket: \"plex\")\n  |> range(start: -15m)\n  |> filter(fn: (r) => r._measurement == \"prometheus\" and r._field == \"plex_media_music\")\n  |> last()"
-        }
-      ]
+      "title": "Stream Status",
+      "type": "row",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 5,
+        "w": 24,
+        "h": 1
+      }
     },
     {
       "id": 4,
+      "title": "Active Streams",
       "type": "stat",
-      "title": "Total Storage",
-      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 1 },
-      "datasource": { "type": "influxdb", "uid": "cfecbpgdhs5j4b" },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "TB",
-          "decimals": 2,
-          "color": { "mode": "thresholds" },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [{ "color": "green", "value": null }]
-          }
-        }
+      "gridPos": {
+        "x": 0,
+        "y": 6,
+        "w": 4,
+        "h": 4
       },
-      "options": {
-        "reduceOptions": { "calcs": ["sum"] },
-        "orientation": "auto",
-        "colorMode": "value",
-        "graphMode": "none",
-        "textMode": "auto"
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
       },
       "targets": [
         {
-          "refId": "A",
-          "datasource": { "type": "influxdb", "uid": "cfecbpgdhs5j4b" },
-          "query": "from(bucket: \"plex\")\n  |> range(start: -15m)\n  |> filter(fn: (r) => r._measurement == \"prometheus\" and r._field == \"library_storage_total\")\n  |> last()\n  |> map(fn: (r) => ({r with _value: r._value / 1099511627776.0, _field: r.library}))\n  |> keep(columns: [\"_time\", \"_value\", \"_field\"])"
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"plex\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r._measurement == \"prometheus\" and r._field == \"plays_total\")\n  |> last()\n  |> keep(columns: [\"session\", \"_value\"])\n  |> unique(column: \"session\")\n  |> group()\n  |> count()",
+          "refId": "A"
         }
-      ]
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "noValue": "0"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "short",
+          "min": 0
+        },
+        "overrides": []
+      }
     },
     {
       "id": 5,
+      "title": "Direct Play",
       "type": "stat",
-      "title": "TV Shows",
-      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 5 },
-      "datasource": { "type": "influxdb", "uid": "cfecbpgdhs5j4b" },
+      "gridPos": {
+        "x": 4,
+        "y": 6,
+        "w": 4,
+        "h": 4
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"plex\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r._measurement == \"prometheus\" and r._field == \"plays_total\" and r.stream_type == \"directplay\")\n  |> last()\n  |> unique(column: \"session\")\n  |> group()\n  |> count()",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "noValue": "0"
+      },
       "fieldConfig": {
         "defaults": {
-          "unit": "short",
-          "decimals": 0,
-          "color": { "mode": "thresholds" },
           "thresholds": {
             "mode": "absolute",
-            "steps": [{ "color": "blue", "value": null }]
+            "steps": [
+              {
+                "color": "#6EB26E",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short",
+          "min": 0
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 6,
+      "title": "Video Transcodes",
+      "type": "stat",
+      "gridPos": {
+        "x": 8,
+        "y": 6,
+        "w": 4,
+        "h": 4
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"plex\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r._measurement == \"prometheus\" and r._field == \"plays_total\" and r.transcode_type == \"video\")\n  |> last()\n  |> unique(column: \"session\")\n  |> group()\n  |> count()",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "noValue": "0"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "short",
+          "min": 0
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 7,
+      "title": "Audio Transcodes",
+      "type": "stat",
+      "gridPos": {
+        "x": 12,
+        "y": 6,
+        "w": 4,
+        "h": 4
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"plex\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r._measurement == \"prometheus\" and r._field == \"plays_total\" and r.transcode_type == \"audio\")\n  |> last()\n  |> unique(column: \"session\")\n  |> group()\n  |> count()",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "noValue": "0"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "short",
+          "min": 0
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 8,
+      "title": "Streaming Activity",
+      "type": "timeseries",
+      "gridPos": {
+        "x": 0,
+        "y": 10,
+        "w": 24,
+        "h": 8
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"plex\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"prometheus\" and r._field == \"play_seconds_total\")\n  |> derivative(unit: 1s, nonNegative: true)\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> map(fn: (r) => ({r with _field: r.user + \" \u2014 \" + r.title}))",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "tooltip": {
+          "mode": "multi"
+        },
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "spanNulls": false,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 9,
+      "title": "Active Sessions",
+      "type": "row",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 18,
+        "w": 24,
+        "h": 1
+      }
+    },
+    {
+      "id": 10,
+      "title": "Active Sessions",
+      "type": "table",
+      "gridPos": {
+        "x": 0,
+        "y": 19,
+        "w": 24,
+        "h": 8
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"plex\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r._measurement == \"prometheus\" and r._field == \"plays_total\")\n  |> last()\n  |> pivot(rowKey: [\"session\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> keep(columns: [\"session\", \"user\", \"title\", \"device\", \"stream_type\", \"transcode_type\", \"stream_resolution\", \"subtitle_action\"])",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "footer": {
+          "show": false
+        },
+        "showHeader": true,
+        "noValue": "No active sessions"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "displayMode": "auto",
+            "filterable": true
           }
         },
         "overrides": [
           {
-            "matcher": { "id": "byName", "options": "TV Shows" },
-            "properties": [{ "id": "displayName", "value": "TV Shows" }]
+            "matcher": {
+              "id": "byName",
+              "options": "stream_type"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Stream Type"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "transcode_type"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Transcode"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "stream_resolution"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Resolution"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "subtitle_action"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Subtitles"
+              }
+            ]
           }
         ]
-      },
-      "options": {
-        "reduceOptions": { "calcs": ["lastNotNull"] },
-        "orientation": "auto",
-        "colorMode": "value",
-        "graphMode": "none",
-        "textMode": "auto"
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "datasource": { "type": "influxdb", "uid": "cfecbpgdhs5j4b" },
-          "query": "from(bucket: \"plex\")\n  |> range(start: -15m)\n  |> filter(fn: (r) => r._measurement == \"prometheus\" and r._field == \"plex_library_items\" and r.library == \"TV Shows\")\n  |> last()"
-        }
-      ]
-    },
-    {
-      "id": 200,
-      "type": "row",
-      "title": "Storage by Library",
-      "collapsed": false,
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 9 }
-    },
-    {
-      "id": 10,
-      "type": "barchart",
-      "title": "Storage per Library (TB)",
-      "gridPos": { "h": 10, "w": 12, "x": 0, "y": 10 },
-      "datasource": { "type": "influxdb", "uid": "cfecbpgdhs5j4b" },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "TB",
-          "decimals": 2,
-          "color": { "mode": "palette-classic" }
-        }
-      },
-      "options": {
-        "orientation": "horizontal",
-        "xTickLabelRotation": 0,
-        "groupWidth": 0.7,
-        "barWidth": 0.97,
-        "tooltip": { "mode": "single" },
-        "legend": { "displayMode": "list", "placement": "bottom" }
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "datasource": { "type": "influxdb", "uid": "cfecbpgdhs5j4b" },
-          "query": "from(bucket: \"plex\")\n  |> range(start: -15m)\n  |> filter(fn: (r) => r._measurement == \"prometheus\" and r._field == \"library_storage_total\")\n  |> last()\n  |> map(fn: (r) => ({r with _value: r._value / 1099511627776.0, _field: r.library}))\n  |> keep(columns: [\"_time\", \"_value\", \"_field\"])"
-        }
-      ]
+      }
     },
     {
       "id": 11,
-      "type": "barchart",
-      "title": "Duration per Library (Hours)",
-      "gridPos": { "h": 10, "w": 12, "x": 12, "y": 10 },
-      "datasource": { "type": "influxdb", "uid": "cfecbpgdhs5j4b" },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "h",
-          "decimals": 0,
-          "color": { "mode": "palette-classic" }
-        }
+      "title": "Host Performance",
+      "type": "row",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 27,
+        "w": 24,
+        "h": 1
+      }
+    },
+    {
+      "id": 12,
+      "title": "CPU Usage",
+      "type": "gauge",
+      "gridPos": {
+        "x": 0,
+        "y": 28,
+        "w": 5,
+        "h": 8
       },
-      "options": {
-        "orientation": "horizontal",
-        "xTickLabelRotation": 0,
-        "groupWidth": 0.7,
-        "barWidth": 0.97,
-        "tooltip": { "mode": "single" },
-        "legend": { "displayMode": "list", "placement": "bottom" }
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
       },
       "targets": [
         {
-          "refId": "A",
-          "datasource": { "type": "influxdb", "uid": "cfecbpgdhs5j4b" },
-          "query": "from(bucket: \"plex\")\n  |> range(start: -15m)\n  |> filter(fn: (r) => r._measurement == \"prometheus\" and r._field == \"library_duration_total\")\n  |> last()\n  |> map(fn: (r) => ({r with _value: r._value / 3600000.0, _field: r.library}))\n  |> keep(columns: [\"_time\", \"_value\", \"_field\"])"
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"plex\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r._measurement == \"prometheus\" and r._field == \"host_cpu_util\")\n  |> last()",
+          "refId": "A"
         }
-      ]
-    },
-    {
-      "id": 300,
-      "type": "row",
-      "title": "Plex Host Performance",
-      "collapsed": false,
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 20 }
-    },
-    {
-      "id": 20,
-      "type": "timeseries",
-      "title": "CPU & Memory Usage (%)",
-      "gridPos": { "h": 8, "w": 16, "x": 0, "y": 21 },
-      "datasource": { "type": "influxdb", "uid": "cfecbpgdhs5j4b" },
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "auto",
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "noValue": "0"
+      },
       "fieldConfig": {
         "defaults": {
           "unit": "percent",
           "min": 0,
           "max": 100,
-          "color": { "mode": "palette-classic" }
-        }
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 70
+              },
+              {
+                "color": "red",
+                "value": 90
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 13,
+      "title": "Memory Usage",
+      "type": "gauge",
+      "gridPos": {
+        "x": 5,
+        "y": 28,
+        "w": 5,
+        "h": 8
       },
-      "options": {
-        "tooltip": { "mode": "multi" },
-        "legend": { "displayMode": "list", "placement": "bottom" }
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
       },
       "targets": [
         {
-          "refId": "A",
-          "datasource": { "type": "influxdb", "uid": "cfecbpgdhs5j4b" },
-          "query": "from(bucket: \"plex\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"prometheus\" and r._field == \"host_cpu_util\")\n  |> map(fn: (r) => ({r with _field: \"CPU %\"}))"
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"plex\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r._measurement == \"prometheus\" and r._field == \"host_mem_util\")\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "auto",
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "noValue": "0"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 70
+              },
+              {
+                "color": "red",
+                "value": 90
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 14,
+      "title": "Exporter Memory",
+      "type": "stat",
+      "gridPos": {
+        "x": 10,
+        "y": 28,
+        "w": 4,
+        "h": 8
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"plex\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r._measurement == \"prometheus\" and r._field == \"process_resident_memory_bytes\")\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "decbytes",
+          "color": {
+            "fixedColor": "#E5A00D",
+            "mode": "fixed"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#E5A00D",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 15,
+      "title": "CPU & Memory Over Time",
+      "type": "timeseries",
+      "gridPos": {
+        "x": 14,
+        "y": 28,
+        "w": 10,
+        "h": 8
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"plex\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"prometheus\" and r._field == \"host_cpu_util\")",
+          "refId": "A"
         },
         {
-          "refId": "B",
-          "datasource": { "type": "influxdb", "uid": "cfecbpgdhs5j4b" },
-          "query": "from(bucket: \"plex\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"prometheus\" and r._field == \"host_mem_util\")\n  |> map(fn: (r) => ({r with _field: \"Memory %\"}))"
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"plex\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"prometheus\" and r._field == \"host_mem_util\")",
+          "refId": "B"
         }
-      ]
-    },
-    {
-      "id": 21,
-      "type": "stat",
-      "title": "Current CPU %",
-      "gridPos": { "h": 4, "w": 4, "x": 16, "y": 21 },
-      "datasource": { "type": "influxdb", "uid": "cfecbpgdhs5j4b" },
+      ],
+      "options": {
+        "tooltip": {
+          "mode": "multi"
+        },
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      },
       "fieldConfig": {
         "defaults": {
           "unit": "percent",
-          "decimals": 1,
-          "color": { "mode": "thresholds" },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              { "color": "green", "value": null },
-              { "color": "yellow", "value": 50 },
-              { "color": "red", "value": 80 }
-            ]
+          "min": 0,
+          "max": 100,
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "spanNulls": false,
+            "showPoints": "never"
           }
-        }
-      },
-      "options": {
-        "reduceOptions": { "calcs": ["lastNotNull"] },
-        "orientation": "auto",
-        "colorMode": "value",
-        "graphMode": "none",
-        "textMode": "auto"
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "datasource": { "type": "influxdb", "uid": "cfecbpgdhs5j4b" },
-          "query": "from(bucket: \"plex\")\n  |> range(start: -15m)\n  |> filter(fn: (r) => r._measurement == \"prometheus\" and r._field == \"host_cpu_util\")\n  |> last()"
-        }
-      ]
+        },
+        "overrides": []
+      }
     },
     {
-      "id": 22,
-      "type": "stat",
-      "title": "Current Memory %",
-      "gridPos": { "h": 4, "w": 4, "x": 20, "y": 21 },
-      "datasource": { "type": "influxdb", "uid": "cfecbpgdhs5j4b" },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "percent",
-          "decimals": 1,
-          "color": { "mode": "thresholds" },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              { "color": "green", "value": null },
-              { "color": "yellow", "value": 70 },
-              { "color": "red", "value": 90 }
-            ]
-          }
-        }
-      },
-      "options": {
-        "reduceOptions": { "calcs": ["lastNotNull"] },
-        "orientation": "auto",
-        "colorMode": "value",
-        "graphMode": "none",
-        "textMode": "auto"
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "datasource": { "type": "influxdb", "uid": "cfecbpgdhs5j4b" },
-          "query": "from(bucket: \"plex\")\n  |> range(start: -15m)\n  |> filter(fn: (r) => r._measurement == \"prometheus\" and r._field == \"host_mem_util\")\n  |> last()"
-        }
-      ]
-    },
-    {
-      "id": 23,
-      "type": "stat",
-      "title": "Plex Version",
-      "gridPos": { "h": 4, "w": 4, "x": 16, "y": 25 },
-      "datasource": { "type": "influxdb", "uid": "cfecbpgdhs5j4b" },
-      "fieldConfig": {
-        "defaults": {
-          "color": { "mode": "thresholds" },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [{ "color": "blue", "value": null }]
-          }
-        }
-      },
-      "options": {
-        "reduceOptions": { "calcs": ["lastNotNull"] },
-        "orientation": "auto",
-        "colorMode": "value",
-        "graphMode": "none",
-        "textMode": "value"
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "datasource": { "type": "influxdb", "uid": "cfecbpgdhs5j4b" },
-          "query": "from(bucket: \"plex\")\n  |> range(start: -15m)\n  |> filter(fn: (r) => r._measurement == \"prometheus\" and r._field == \"server_info\")\n  |> last()\n  |> map(fn: (r) => ({r with _value: r.version}))"
-        }
-      ]
-    },
-    {
-      "id": 400,
-      "type": "row",
+      "id": 16,
       "title": "Bandwidth",
+      "type": "row",
       "collapsed": false,
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 29 }
+      "gridPos": {
+        "x": 0,
+        "y": 36,
+        "w": 24,
+        "h": 1
+      }
     },
     {
-      "id": 30,
+      "id": 17,
+      "title": "Stream Bandwidth",
       "type": "timeseries",
-      "title": "Transmit Bandwidth (bytes/s)",
-      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 30 },
-      "datasource": { "type": "influxdb", "uid": "cfecbpgdhs5j4b" },
+      "gridPos": {
+        "x": 0,
+        "y": 37,
+        "w": 18,
+        "h": 8
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"plex\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"prometheus\" and r._field == \"transmit_bytes_total\")\n  |> derivative(unit: 1s, nonNegative: true)",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "tooltip": {
+          "mode": "single"
+        },
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      },
       "fieldConfig": {
         "defaults": {
           "unit": "Bps",
-          "color": { "mode": "palette-classic" }
-        }
+          "color": {
+            "fixedColor": "#E5A00D",
+            "mode": "fixed"
+          },
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 20,
+            "spanNulls": false,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 18,
+      "title": "Total Data Transmitted",
+      "type": "stat",
+      "gridPos": {
+        "x": 18,
+        "y": 37,
+        "w": 6,
+        "h": 8
       },
-      "options": {
-        "tooltip": { "mode": "single" },
-        "legend": { "displayMode": "list", "placement": "bottom" }
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
       },
       "targets": [
         {
-          "refId": "A",
-          "datasource": { "type": "influxdb", "uid": "cfecbpgdhs5j4b" },
-          "query": "from(bucket: \"plex\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"prometheus\" and r._field == \"transmit_bytes_total\")\n  |> derivative(unit: 1s, nonNegative: true)"
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"plex\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r._measurement == \"prometheus\" and r._field == \"transmit_bytes_total\")\n  |> last()\n  |> map(fn: (r) => ({r with _value: r._value / 1073741824.0}))",
+          "refId": "A"
         }
-      ]
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 2,
+          "displayName": "${__value} GB",
+          "color": {
+            "fixedColor": "#E5A00D",
+            "mode": "fixed"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#E5A00D",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 19,
+      "title": "Library Overview",
+      "type": "row",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 45,
+        "w": 24,
+        "h": 1
+      }
+    },
+    {
+      "id": 20,
+      "title": "Movies",
+      "type": "stat",
+      "gridPos": {
+        "x": 0,
+        "y": 46,
+        "w": 4,
+        "h": 6
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"plex\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r._measurement == \"prometheus\" and r._field == \"plex_media_movies\")\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "color": {
+            "fixedColor": "#E5A00D",
+            "mode": "fixed"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#E5A00D",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 21,
+      "title": "TV Episodes",
+      "type": "stat",
+      "gridPos": {
+        "x": 4,
+        "y": 46,
+        "w": 4,
+        "h": 6
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"plex\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r._measurement == \"prometheus\" and r._field == \"plex_media_episodes\")\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "color": {
+            "fixedColor": "#E5A00D",
+            "mode": "fixed"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#E5A00D",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 22,
+      "title": "Music Artists",
+      "type": "stat",
+      "gridPos": {
+        "x": 8,
+        "y": 46,
+        "w": 4,
+        "h": 6
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"plex\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r._measurement == \"prometheus\" and r._field == \"plex_media_music\")\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "color": {
+            "fixedColor": "#E5A00D",
+            "mode": "fixed"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#E5A00D",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 23,
+      "title": "Total Storage",
+      "type": "stat",
+      "gridPos": {
+        "x": 12,
+        "y": 46,
+        "w": 4,
+        "h": 6
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"plex\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r._measurement == \"prometheus\" and r._field == \"library_storage_total\")\n  |> last()\n  |> group()\n  |> sum()\n  |> map(fn: (r) => ({r with _value: r._value / 1099511627776.0}))",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 1,
+          "displayName": "${__value} TB",
+          "color": {
+            "fixedColor": "#E5A00D",
+            "mode": "fixed"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#E5A00D",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 24,
+      "title": "Storage by Library",
+      "type": "piechart",
+      "gridPos": {
+        "x": 16,
+        "y": 46,
+        "w": 8,
+        "h": 6
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"plex\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r._measurement == \"prometheus\" and r._field == \"library_storage_total\")\n  |> last()\n  |> map(fn: (r) => ({r with _value: r._value / 1099511627776.0, _field: r.library}))\n  |> keep(columns: [\"_time\", \"_value\", \"_field\"])",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "pieType": "pie",
+        "legend": {
+          "displayMode": "list",
+          "placement": "right"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 2,
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 25,
+      "title": "Content Hours",
+      "type": "row",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 52,
+        "w": 24,
+        "h": 1
+      }
+    },
+    {
+      "id": 26,
+      "title": "Hours of Content by Library",
+      "type": "barchart",
+      "gridPos": {
+        "x": 0,
+        "y": 53,
+        "w": 24,
+        "h": 8
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "cfecbpgdhs5j4b"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cfecbpgdhs5j4b"
+          },
+          "query": "from(bucket: \"plex\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r._measurement == \"prometheus\" and r._field == \"library_duration_total\")\n  |> last()\n  |> map(fn: (r) => ({r with _value: r._value / 3600000.0, _field: r.library}))\n  |> keep(columns: [\"_time\", \"_value\", \"_field\"])",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "orientation": "horizontal",
+        "barWidth": 0.7,
+        "groupWidth": 0.7,
+        "fillOpacity": 80,
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        },
+        "xTickLabelRotation": 0
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "h",
+          "color": {
+            "fixedColor": "#E5A00D",
+            "mode": "fixed"
+          },
+          "custom": {
+            "fillOpacity": 80
+          }
+        },
+        "overrides": []
+      }
     }
-  ]
+  ],
+  "templating": {
+    "list": []
+  },
+  "annotations": {
+    "list": []
+  },
+  "links": [],
+  "style": "dark",
+  "graphTooltip": 1
 }
