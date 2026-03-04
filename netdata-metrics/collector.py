@@ -59,6 +59,10 @@ UNIFI_URL     = os.environ.get("UNIFI_URL", "https://192.168.140.1")
 UNIFI_API_KEY = os.environ.get("UNIFI_API", "")
 UNIFI_SITE    = os.environ.get("UNIFI_SITE", "default")
 
+# ── TrueNAS config ─────────────────────────────────────────────────────────────
+TRUENAS_URL     = os.environ.get("TRUENAS_URL", "")      # optional; skip all TrueNAS if not set
+TRUENAS_API_KEY = os.environ.get("TRUENAS_API_KEY", "")
+
 # Prometheus-via-Netdata switch sources on the SNMP node.
 # key = device name (as it appears in prometheus_ chart prefix), value = human label.
 # NOTE: C3569 and CR-01 went stale 2026-02-05 — collector stopped scraping them.
@@ -622,6 +626,196 @@ def collect_unifi_devices() -> list[Point]:
         return []
 
 
+# ── TrueNAS collection ────────────────────────────────────────────────────────
+def _truenas_get(path: str, **kwargs) -> Optional[dict]:
+    """GET helper for TrueNAS API."""
+    if not TRUENAS_URL:
+        return None
+    try:
+        resp = requests.get(
+            f"{TRUENAS_URL}{path}",
+            headers={"Authorization": f"Bearer {TRUENAS_API_KEY}"},
+            timeout=10,
+            **kwargs,
+        )
+        resp.raise_for_status()
+        return resp.json()
+    except Exception as e:
+        logger.error(f"TrueNAS GET {path} failed: {e}")
+        return None
+
+
+def _truenas_post(path: str, payload: dict) -> Optional[dict]:
+    """POST helper for TrueNAS API."""
+    if not TRUENAS_URL:
+        return None
+    try:
+        resp = requests.post(
+            f"{TRUENAS_URL}{path}",
+            headers={
+                "Authorization": f"Bearer {TRUENAS_API_KEY}",
+                "Content-Type": "application/json",
+            },
+            json=payload,
+            timeout=15,
+        )
+        resp.raise_for_status()
+        return resp.json()
+    except Exception as e:
+        logger.error(f"TrueNAS POST {path} failed: {e}")
+        return None
+
+
+def collect_truenas_pools() -> list[Point]:
+    """
+    Poll TrueNAS pool list and write capacity metrics to InfluxDB.
+    Measurement: truenas_pool
+    Tags: pool
+    Fields: status (string), size_bytes, free_bytes, used_bytes, used_pct (float)
+    """
+    if not TRUENAS_URL:
+        return []
+    data = _truenas_get("/api/v2.0/pool")
+    if not data:
+        return []
+
+    ts = datetime.now(timezone.utc)
+    points = []
+    for pool in data:
+        name = pool.get("name", "unknown")
+        topology = pool.get("topology", {})
+        size_bytes = pool.get("size", 0) or 0
+        free_bytes = pool.get("free", 0) or 0
+        used_bytes = size_bytes - free_bytes
+        used_pct = (used_bytes / size_bytes * 100) if size_bytes > 0 else 0.0
+        p = (
+            Point("truenas_pool")
+            .tag("pool", name)
+            .field("status",     pool.get("status", "UNKNOWN"))
+            .field("size_bytes", float(size_bytes))
+            .field("free_bytes", float(free_bytes))
+            .field("used_bytes", float(used_bytes))
+            .field("used_pct",   float(used_pct))
+            .time(ts, "s")
+        )
+        points.append(p)
+
+    logger.debug(f"TrueNAS pools: {len(points)} points")
+    return points
+
+
+def collect_truenas_datasets() -> list[Point]:
+    """
+    Poll TrueNAS dataset list and write usage metrics to InfluxDB.
+    Measurement: truenas_dataset
+    Tags: dataset, pool
+    Fields: used_bytes, available_bytes, used_pct (float)
+    Skips: depth > 2, used_bytes == 0
+    """
+    if not TRUENAS_URL:
+        return []
+    data = _truenas_get("/api/v2.0/pool/dataset", params={"limit": 200})
+    if not data:
+        return []
+
+    ts = datetime.now(timezone.utc)
+    points = []
+    for ds in data:
+        ds_name = ds.get("name", "")
+        pool_name = ds_name.split("/")[0] if "/" in ds_name else ds_name
+        # Depth = number of slashes
+        depth = ds_name.count("/")
+        if depth > 2:
+            continue
+        used_raw  = ds.get("used", {})
+        avail_raw = ds.get("available", {})
+        used_bytes  = used_raw.get("parsed", 0) if isinstance(used_raw, dict) else (used_raw or 0)
+        avail_bytes = avail_raw.get("parsed", 0) if isinstance(avail_raw, dict) else (avail_raw or 0)
+        if used_bytes == 0:
+            continue
+        total = used_bytes + avail_bytes
+        used_pct = (used_bytes / total * 100) if total > 0 else 0.0
+        p = (
+            Point("truenas_dataset")
+            .tag("dataset", ds_name)
+            .tag("pool",    pool_name)
+            .field("used_bytes",      float(used_bytes))
+            .field("available_bytes", float(avail_bytes))
+            .field("used_pct",        float(used_pct))
+            .time(ts, "s")
+        )
+        points.append(p)
+
+    logger.debug(f"TrueNAS datasets: {len(points)} points")
+    return points
+
+
+def collect_truenas_disk_temps() -> list[Point]:
+    """
+    Poll TrueNAS disk temperatures and write to InfluxDB.
+    Measurement: truenas_disk_temp
+    Tags: disk
+    Fields: temp_celsius (float)
+    Skips: disks where temp is null
+    """
+    if not TRUENAS_URL:
+        return []
+    data = _truenas_post("/api/v2.0/disk/temperatures", {})
+    if not data:
+        return []
+
+    ts = datetime.now(timezone.utc)
+    points = []
+    # Response: {"sda": 35, "sdb": null, ...}
+    for disk, temp in data.items():
+        if temp is None:
+            continue
+        p = (
+            Point("truenas_disk_temp")
+            .tag("disk", disk)
+            .field("temp_celsius", float(temp))
+            .time(ts, "s")
+        )
+        points.append(p)
+
+    logger.debug(f"TrueNAS disk temps: {len(points)} points")
+    return points
+
+
+def collect_truenas_alerts() -> list[Point]:
+    """
+    Poll TrueNAS active alerts and write to InfluxDB.
+    Measurement: truenas_alert
+    Tags: level, alert_uuid
+    Fields: message (string), dismissed (bool as int)
+    """
+    if not TRUENAS_URL:
+        return []
+    data = _truenas_get("/api/v2.0/alert/list")
+    if not data:
+        return []
+
+    ts = datetime.now(timezone.utc)
+    points = []
+    for alert in data:
+        level = alert.get("level", "INFO")
+        uuid  = alert.get("uuid", "")
+        msg   = alert.get("formatted", "") or alert.get("text", "") or ""
+        dismissed = int(bool(alert.get("dismissed", False)))
+        p = (
+            Point("truenas_alert")
+            .tag("level",      level)
+            .tag("alert_uuid", uuid)
+            .field("message",   msg[:500])
+            .field("dismissed", dismissed)
+            .time(ts, "s")
+        )
+        points.append(p)
+
+    logger.debug(f"TrueNAS alerts: {len(points)} points")
+    return points
+
+
 # ── Main loop ──────────────────────────────────────────────────────────────────
 def main():
     logger.info("=" * 60)
@@ -719,6 +913,15 @@ def main():
         unifi_pts = collect_unifi_devices() if UNIFI_API_KEY else []
         all_points.extend(unifi_pts)
 
+        # Collect TrueNAS metrics (if TRUENAS_URL is configured)
+        truenas_pts = []
+        if TRUENAS_URL:
+            truenas_pts.extend(collect_truenas_pools())
+            truenas_pts.extend(collect_truenas_datasets())
+            truenas_pts.extend(collect_truenas_disk_temps())
+            truenas_pts.extend(collect_truenas_alerts())
+            all_points.extend(truenas_pts)
+
         # Write batch to InfluxDB
         if all_points:
             try:
@@ -728,7 +931,8 @@ def main():
                     f"{ok_count}/{len(nodes)} nodes, "
                     f"{switch_points} switch port pts, "
                     f"{len(alarm_pts)} alarm pts, "
-                    f"{len(unifi_pts)} unifi pts"
+                    f"{len(unifi_pts)} unifi pts, "
+                    f"{len(truenas_pts)} truenas pts"
                 )
             except Exception as e:
                 logger.error(f"InfluxDB write failed: {e}")
