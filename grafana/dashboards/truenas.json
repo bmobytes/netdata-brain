@@ -1,0 +1,231 @@
+{
+  "id": null,
+  "uid": "truenas-dashboard-01",
+  "title": "TrueNAS — Storage & Health",
+  "tags": ["truenas", "storage"],
+  "timezone": "browser",
+  "refresh": "1m",
+  "version": 1,
+  "panels": [
+    {
+      "id": 1,
+      "title": "Pool Used %",
+      "type": "gauge",
+      "gridPos": {"h": 8, "w": 6, "x": 0, "y": 0},
+      "options": {
+        "reduceOptions": {"calcs": ["lastNotNull"]},
+        "orientation": "auto",
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "minVizWidth": 75,
+        "minVizHeight": 75
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 70},
+              {"color": "red", "value": 90}
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "datasource": {"uid": "cfecbpgdhs5j4b"},
+          "refId": "A",
+          "query": "from(bucket: \"netdata\") |> range(start: -5m) |> filter(fn: (r) => r._measurement == \"truenas_pool\" and r._field == \"used_pct\") |> last()"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Used Storage (TB)",
+      "type": "stat",
+      "gridPos": {"h": 4, "w": 6, "x": 6, "y": 0},
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": {"calcs": ["lastNotNull"]}
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "decimals": 2
+        }
+      },
+      "targets": [
+        {
+          "datasource": {"uid": "cfecbpgdhs5j4b"},
+          "refId": "A",
+          "query": "from(bucket: \"netdata\") |> range(start: -5m) |> filter(fn: (r) => r._measurement == \"truenas_pool\" and r._field == \"used_bytes\") |> last()"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Free Storage (TB)",
+      "type": "stat",
+      "gridPos": {"h": 4, "w": 6, "x": 12, "y": 0},
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": {"calcs": ["lastNotNull"]}
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "decimals": 2,
+          "color": {"mode": "fixed", "fixedColor": "green"}
+        }
+      },
+      "targets": [
+        {
+          "datasource": {"uid": "cfecbpgdhs5j4b"},
+          "refId": "A",
+          "query": "from(bucket: \"netdata\") |> range(start: -5m) |> filter(fn: (r) => r._measurement == \"truenas_pool\" and r._field == \"free_bytes\") |> last()"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Pool Status",
+      "type": "stat",
+      "gridPos": {"h": 4, "w": 6, "x": 18, "y": 0},
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "reduceOptions": {"calcs": ["lastNotNull"]},
+        "textMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            {"type": "value", "options": {"ONLINE": {"text": "ONLINE", "color": "green"}}},
+            {"type": "value", "options": {"DEGRADED": {"text": "DEGRADED", "color": "yellow"}}},
+            {"type": "value", "options": {"FAULTED": {"text": "FAULTED", "color": "red"}}}
+          ]
+        }
+      },
+      "targets": [
+        {
+          "datasource": {"uid": "cfecbpgdhs5j4b"},
+          "refId": "A",
+          "query": "from(bucket: \"netdata\") |> range(start: -5m) |> filter(fn: (r) => r._measurement == \"truenas_pool\" and r._field == \"status\") |> last()"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Dataset Usage (Top Datasets by Size)",
+      "type": "barchart",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+      "options": {
+        "orientation": "horizontal",
+        "xTickLabelRotation": 0,
+        "legend": {"displayMode": "none"}
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "custom": {
+            "fillOpacity": 80
+          }
+        }
+      },
+      "targets": [
+        {
+          "datasource": {"uid": "cfecbpgdhs5j4b"},
+          "refId": "A",
+          "query": "from(bucket: \"netdata\") |> range(start: -5m) |> filter(fn: (r) => r._measurement == \"truenas_dataset\" and r._field == \"used_bytes\") |> last() |> group() |> sort(columns: [\"_value\"], desc: true) |> limit(n: 10)"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Disk Temperatures (°C)",
+      "type": "table",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+      "options": {
+        "sortBy": [{"displayName": "temp_celsius", "desc": true}]
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "celsius",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 40},
+              {"color": "red", "value": 50}
+            ]
+          },
+          "custom": {
+            "displayMode": "color-background"
+          }
+        }
+      },
+      "targets": [
+        {
+          "datasource": {"uid": "cfecbpgdhs5j4b"},
+          "refId": "A",
+          "query": "from(bucket: \"netdata\") |> range(start: -5m) |> filter(fn: (r) => r._measurement == \"truenas_disk_temp\" and r._field == \"temp_celsius\") |> last() |> group() |> sort(columns: [\"disk\"])"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Active Alerts",
+      "type": "table",
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 16},
+      "options": {
+        "sortBy": [{"displayName": "level", "desc": false}]
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {"id": "byName", "options": "level"},
+            "properties": [
+              {
+                "id": "custom.displayMode",
+                "value": "color-background"
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {"color": "blue", "value": null},
+                    {"color": "yellow", "value": 1},
+                    {"color": "red", "value": 2}
+                  ]
+                }
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {"type": "value", "options": {"CRITICAL": {"color": "red", "index": 2}}},
+                  {"type": "value", "options": {"WARNING": {"color": "yellow", "index": 1}}},
+                  {"type": "value", "options": {"NOTICE": {"color": "blue", "index": 0}}}
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "datasource": {"uid": "cfecbpgdhs5j4b"},
+          "refId": "A",
+          "query": "from(bucket: \"netdata\") |> range(start: -5m) |> filter(fn: (r) => r._measurement == \"truenas_alert\") |> last() |> group() |> pivot(rowKey: [\"_time\", \"alert_uuid\", \"level\"], columnKey: [\"_field\"], valueColumn: \"_value\")"
+        }
+      ]
+    }
+  ]
+}

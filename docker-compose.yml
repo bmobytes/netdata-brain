@@ -101,6 +101,14 @@ services:
   # Config: /home/erbartos/.config/unpoller/up.conf (secret, not in git)
   # Binary: /home/erbartos/.local/bin/unpoller (v2.34.0)
 
+  # NOTE: plex-exporter and telegraf run as systemd user services on openclaw host (192.168.140.209)
+  # because bmo-deploy (192.168.148.x) cannot reach Plex (192.168.140.142) — same network isolation.
+  # See: /home/erbartos/.config/systemd/user/plex-exporter.service
+  #      /home/erbartos/.config/systemd/user/telegraf-plex.service
+  #      /home/erbartos/.config/telegraf-plex/telegraf.conf
+  # Binaries: /home/erbartos/.local/bin/prometheus-plex-exporter
+  #           /home/erbartos/.local/bin/telegraf
+
 networks:
   bmo-net:
     external: true

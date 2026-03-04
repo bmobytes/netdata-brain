@@ -1,0 +1,206 @@
+{
+  "id": null,
+  "uid": "plex-dashboard-01",
+  "title": "Plex — Media Server",
+  "tags": ["plex", "media"],
+  "timezone": "browser",
+  "refresh": "1m",
+  "version": 1,
+  "panels": [
+    {
+      "id": 1,
+      "title": "Active Sessions",
+      "type": "stat",
+      "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "reduceOptions": {"calcs": ["lastNotNull"]}
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 3},
+              {"color": "red", "value": 6}
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "datasource": {"uid": "cfecbpgdhs5j4b"},
+          "refId": "A",
+          "query": "from(bucket: \"plex\") |> range(start: -5m) |> filter(fn: (r) => r._measurement == \"prometheus\" and r._field == \"plex_sessions_active\") |> last()"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Total Library Items",
+      "type": "stat",
+      "gridPos": {"h": 4, "w": 6, "x": 6, "y": 0},
+      "options": {
+        "colorMode": "none",
+        "graphMode": "none",
+        "reduceOptions": {"calcs": ["sum"]}
+      },
+      "fieldConfig": {
+        "defaults": {"unit": "short"}
+      },
+      "targets": [
+        {
+          "datasource": {"uid": "cfecbpgdhs5j4b"},
+          "refId": "A",
+          "query": "from(bucket: \"plex\") |> range(start: -5m) |> filter(fn: (r) => r._measurement == \"prometheus\" and r._field == \"plex_library_items\") |> last() |> group() |> sum()"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Plex Server",
+      "type": "stat",
+      "gridPos": {"h": 4, "w": 6, "x": 12, "y": 0},
+      "options": {
+        "colorMode": "none",
+        "graphMode": "none",
+        "reduceOptions": {"calcs": ["lastNotNull"]},
+        "textMode": "value_and_name"
+      },
+      "fieldConfig": {
+        "defaults": {}
+      },
+      "targets": [
+        {
+          "datasource": {"uid": "cfecbpgdhs5j4b"},
+          "refId": "A",
+          "query": "from(bucket: \"plex\") |> range(start: -5m) |> filter(fn: (r) => r._measurement == \"prometheus\" and r._field == \"server_info\") |> last()"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Estimated Bandwidth (bytes/s)",
+      "type": "stat",
+      "gridPos": {"h": 4, "w": 6, "x": 18, "y": 0},
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": {"calcs": ["lastNotNull"]}
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "Bps"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {"uid": "cfecbpgdhs5j4b"},
+          "refId": "A",
+          "query": "from(bucket: \"plex\") |> range(start: -5m) |> filter(fn: (r) => r._measurement == \"prometheus\" and r._field == \"estimated_transmit_bytes_total\") |> last()"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Active Sessions Over Time",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 4},
+      "options": {
+        "legend": {"displayMode": "list", "placement": "bottom"},
+        "tooltip": {"mode": "single"}
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10
+          }
+        }
+      },
+      "targets": [
+        {
+          "datasource": {"uid": "cfecbpgdhs5j4b"},
+          "refId": "A",
+          "query": "from(bucket: \"plex\") |> range(start: -24h) |> filter(fn: (r) => r._measurement == \"prometheus\" and r._field == \"plex_sessions_active\") |> aggregateWindow(every: 5m, fn: max, createEmpty: false)"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Library Sizes by Type",
+      "type": "barchart",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 12},
+      "options": {
+        "orientation": "vertical",
+        "legend": {"displayMode": "list", "placement": "bottom"}
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {"fillOpacity": 80}
+        }
+      },
+      "targets": [
+        {
+          "datasource": {"uid": "cfecbpgdhs5j4b"},
+          "refId": "A",
+          "query": "from(bucket: \"plex\") |> range(start: -5m) |> filter(fn: (r) => r._measurement == \"prometheus\" and r._field == \"plex_library_items\") |> last() |> group(columns: [\"library_type\"]) |> sum()"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Library Storage by Type (bytes)",
+      "type": "barchart",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 12},
+      "options": {
+        "orientation": "vertical",
+        "legend": {"displayMode": "list", "placement": "bottom"}
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "custom": {"fillOpacity": 80}
+        }
+      },
+      "targets": [
+        {
+          "datasource": {"uid": "cfecbpgdhs5j4b"},
+          "refId": "A",
+          "query": "from(bucket: \"plex\") |> range(start: -5m) |> filter(fn: (r) => r._measurement == \"prometheus\" and r._field == \"library_storage_total\") |> last() |> group(columns: [\"library_type\"]) |> sum()"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Play Activity (plays/min)",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 20},
+      "options": {
+        "legend": {"displayMode": "list", "placement": "bottom"},
+        "tooltip": {"mode": "multi"}
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10
+          }
+        }
+      },
+      "targets": [
+        {
+          "datasource": {"uid": "cfecbpgdhs5j4b"},
+          "refId": "A",
+          "query": "from(bucket: \"plex\") |> range(start: -24h) |> filter(fn: (r) => r._measurement == \"prometheus\" and r._field == \"plays_total\") |> derivative(unit: 1m, nonNegative: true) |> aggregateWindow(every: 5m, fn: mean, createEmpty: false)"
+        }
+      ]
+    }
+  ]
+}
