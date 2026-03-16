@@ -316,10 +316,10 @@ def build_home_status():
             f"""
 from(bucket: "bartos-homeassistant")
   |> range(start: -5m)
-  |> filter(fn: (r) => r.domain == "climate" and r._field == "hvac_action_str" and r.entity_id == "smart_thermostat")
+  |> filter(fn: (r) => r.domain == "climate" and r._field == "climate_mode_str" and r.entity_id == "main_floor")
   |> last()
 """,
-            unit="string", decimals=0,
+            unit="none", decimals=0,
             thresh=thresholds((None, "blue"))),
         stat_panel("House Humidity", pos(8, hvac_y, 4, 4),
             ha_last("%", "average_house_humidity"),
@@ -420,38 +420,51 @@ def build_homelab_status():
     d = dashboard_base("tv-homelab-status", "🖥️ Homelab Status", tags=["tv", "homelab"])
     panels = []
 
-    # ── Row 1: Fleet Summary (h=5, y=0)
+    # ── Row 1: Fleet Summary (h=5, y=0)  — uses fleet_summary pre-computed fields
     panels.append(row_panel("🔭 Fleet", 0))
     fleet_y = 1
     panels += [
-        stat_panel("Nodes Reporting", pos(0, fleet_y, 6, 5),
+        stat_panel("Nodes Online", pos(0, fleet_y, 4, 5),
             f"""
 from(bucket: "netdata")
   |> range(start: -5m)
-  |> filter(fn: (r) => r._measurement == "node_cpu" and r._field == "cpu_used_pct")
+  |> filter(fn: (r) => r._measurement == "fleet_summary" and r._field == "reachable_nodes")
   |> last()
-  |> group()
-  |> count()
 """,
             unit="none", decimals=0, text_size=20,
             thresh=thresholds((None, "red"), (20, "yellow"), (28, "green"))),
-        stat_panel("Active Alarms", pos(6, fleet_y, 6, 5),
+        stat_panel("Stale Nodes", pos(4, fleet_y, 4, 5),
             f"""
 from(bucket: "netdata")
   |> range(start: -5m)
-  |> filter(fn: (r) => r._measurement == "node_alarms" and r._field == "severity" and r._value > 0)
-  |> filter(fn: (r) => r.node_name != "netdata-snmp-01")
+  |> filter(fn: (r) => r._measurement == "fleet_summary" and r._field == "stale_nodes")
   |> last()
-  |> group()
-  |> count()
 """,
             unit="none", decimals=0, text_size=20,
             thresh=thresholds((None, "green"), (1, "yellow"), (5, "red"))),
-        gauge_panel("UPS Battery", pos(12, fleet_y, 6, 5),
-            ha_last("%", "server_ups_battery_charge"),
+        stat_panel("⚠️ Warnings", pos(8, fleet_y, 4, 5),
+            f"""
+from(bucket: "netdata")
+  |> range(start: -5m)
+  |> filter(fn: (r) => r._measurement == "fleet_summary" and r._field == "total_warning_alerts")
+  |> last()
+""",
+            unit="none", decimals=0, text_size=20,
+            thresh=thresholds((None, "green"), (1, "yellow"), (10, "orange"))),
+        stat_panel("🚨 Critical", pos(12, fleet_y, 4, 5),
+            f"""
+from(bucket: "netdata")
+  |> range(start: -5m)
+  |> filter(fn: (r) => r._measurement == "fleet_summary" and r._field == "total_critical_alerts")
+  |> last()
+""",
+            unit="none", decimals=0, text_size=20,
+            thresh=thresholds((None, "green"), (1, "orange"), (3, "red"))),
+        gauge_panel("UPS Load", pos(16, fleet_y, 4, 5),
+            ha_last("%", "server_ups_load"),
             unit="percent", min_val=0, max_val=100, decimals=0,
-            thresh=thresholds((None, "red"), (20, "yellow"), (50, "green"))),
-        stat_panel("UPS Runtime", pos(18, fleet_y, 6, 5),
+            thresh=thresholds((None, "green"), (60, "yellow"), (85, "red"))),
+        stat_panel("UPS Runtime", pos(20, fleet_y, 4, 5),
             ha_last("min", "server_ups_battery_runtime"),
             unit="m", decimals=0, text_size=20,
             thresh=thresholds((None, "red"), (5, "yellow"), (15, "green"))),
@@ -461,14 +474,19 @@ from(bucket: "netdata")
     panels.append(row_panel("🔌 UPS & Storage", 6))
     ups_y = 7
     panels += [
-        gauge_panel("UPS Load", pos(0, ups_y, 4, 5),
-            ha_last("%", "server_ups_load"),
-            unit="percent", min_val=0, max_val=100, decimals=0,
-            thresh=thresholds((None, "green"), (60, "yellow"), (85, "red"))),
-        stat_panel("UPS Input Voltage", pos(4, ups_y, 4, 5),
-            ha_last("V", "server_ups_input_voltage"),
-            unit="volt", decimals=0,
-            thresh=thresholds((None, "red"), (110, "yellow"), (115, "green"), (125, "yellow"), (130, "red"))),
+        stat_panel("UPS Battery Voltage", pos(0, ups_y, 4, 5),
+            ha_last("V", "server_ups_battery_voltage"),
+            unit="volt", decimals=1,
+            thresh=thresholds((None, "red"), (22, "yellow"), (24, "green"), (27, "yellow"), (30, "red"))),
+        stat_panel("Total Nodes", pos(4, ups_y, 4, 5),
+            f"""
+from(bucket: "netdata")
+  |> range(start: -5m)
+  |> filter(fn: (r) => r._measurement == "fleet_summary" and r._field == "total_nodes")
+  |> last()
+""",
+            unit="none", decimals=0,
+            thresh=thresholds((None, "blue"))),
         stat_panel("TrueNAS Pool", pos(8, ups_y, 4, 5),
             f"""
 from(bucket: "netdata")
@@ -476,7 +494,7 @@ from(bucket: "netdata")
   |> filter(fn: (r) => r._measurement == "truenas_pool" and r._field == "status")
   |> last()
 """,
-            unit="string", decimals=0,
+            unit="none", decimals=0,
             thresh=thresholds((None, "green")),
             mappings=[{
                 "type": "value",
@@ -595,10 +613,10 @@ from(bucket: "unifi")
 from(bucket: "unifi")
   |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
   |> filter(fn: (r) => r._measurement == "clients" and r._field == "bytes_r")
-  |> sum()
-  |> map(fn: (r) => ({{r with _value: r._value / 1000.0}}))
-""", "kbps")],
-            unit="kbps", fill_opacity=20),
+  |> group()
+  |> aggregateWindow(every: 1m, fn: sum, createEmpty: false)
+""", "All Clients")],
+            unit="Bps", fill_opacity=20),
     ]
 
     # ── Row 5: Active Alarms Table (h=7, y=26)
