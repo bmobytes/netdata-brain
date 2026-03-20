@@ -12,7 +12,7 @@ import sys
 import time
 from datetime import datetime, timezone
 
-from collector import NetdataCollector, NodeInfo
+from collector import NetdataCollector, NodeInfo, Alert
 from writer import InfluxWriter
 from alerter import DiscordAlerter
 
@@ -53,6 +53,7 @@ class StateTracker:
     def __init__(self):
         self.prev_states: dict[str, str] = {}         # node_id → state
         self.prev_critical: dict[str, int] = {}       # node_id → critical_count
+        self.prev_alerts: dict[str, list[Alert]] = {}  # node_id → last known alerts
         self.last_digest_day: int = -1
 
     def detect_changes(self, nodes: list[NodeInfo]) -> dict:
@@ -183,13 +184,31 @@ def main():
                 logger.info(f"NODE UP: {node.name}")
                 alerter.send_node_up(node)
 
+            # Fetch alert details once if any critical changes occurred
+            alert_details: list[Alert] = []
+            if changes["new_critical"] or changes["critical_cleared"]:
+                try:
+                    alert_details = collector.fetch_alerts()
+                except Exception as e:
+                    logger.warning(f"Could not fetch alert details: {e}")
+
+            # Build per-node alert lookup
+            alerts_by_node: dict[str, list[Alert]] = {}
+            for a in alert_details:
+                alerts_by_node.setdefault(a.node_id, []).append(a)
+
             for node, prev_crit in changes["new_critical"]:
-                logger.warning(f"NEW CRITICAL: {node.name} ({node.critical_count} alerts)")
-                alerter.send_new_critical(node, prev_crit)
+                node_alerts = alerts_by_node.get(node.id, [])
+                logger.warning(f"NEW CRITICAL: {node.name} ({node.critical_count} alerts) — {[a.name for a in node_alerts if a.status == 'CRITICAL']}")
+                # Cache current alerts so we can show them if they clear next cycle
+                tracker.prev_alerts[node.id] = node_alerts
+                alerter.send_new_critical(node, prev_crit, node_alerts)
 
             for node in changes["critical_cleared"]:
+                prev_node_alerts = tracker.prev_alerts.get(node.id, [])
                 logger.info(f"CRITICAL CLEARED: {node.name}")
-                alerter.send_critical_cleared(node)
+                alerter.send_critical_cleared(node, prev_node_alerts)
+                tracker.prev_alerts.pop(node.id, None)
 
             # Write metrics
             if writer:

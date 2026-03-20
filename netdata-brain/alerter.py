@@ -106,33 +106,75 @@ class DiscordAlerter:
         }
         self._post(payload)
 
-    def send_new_critical(self, node: NodeInfo, prev_critical: int):
+    def send_new_critical(self, node: NodeInfo, prev_critical: int, alerts: list = None):
         new_count = node.critical_count - prev_critical
+
+        fields = [
+            {"name": "New Criticals", "value": str(new_count), "inline": True},
+            {"name": "Total Critical", "value": str(node.critical_count), "inline": True},
+            {"name": "Warnings", "value": str(node.warning_count), "inline": True},
+            {"name": "OS", "value": node.os_name, "inline": True},
+        ]
+
+        if alerts:
+            crit_alerts = [a for a in alerts if a.status == "CRITICAL"]
+            if crit_alerts:
+                lines = []
+                for a in crit_alerts[:8]:
+                    line = f"• **{a.name}** (`{a.chart}`)"
+                    if a.info:
+                        line += f"\n  ↳ {a.info}"
+                    if a.value is not None:
+                        try:
+                            line += f"  [{a.value:.2f}]"
+                        except (TypeError, ValueError):
+                            pass
+                    lines.append(line)
+                if len(crit_alerts) > 8:
+                    lines.append(f"…and {len(crit_alerts) - 8} more")
+                fields.append({
+                    "name": f"🚨 Critical Alerts ({len(crit_alerts)})",
+                    "value": "\n".join(lines),
+                    "inline": False,
+                })
+
         payload = {
             "username": "netdata-brain",
             "embeds": [{
                 "title": f"🚨 New Critical Alert: {node.name}",
                 "description": f"**{node.name}** now has **{node.critical_count}** critical alert(s)",
                 "color": COLOR_CRITICAL,
-                "fields": [
-                    {"name": "New Criticals", "value": str(new_count), "inline": True},
-                    {"name": "Total Critical", "value": str(node.critical_count), "inline": True},
-                    {"name": "Warnings", "value": str(node.warning_count), "inline": True},
-                    {"name": "OS", "value": f"{node.os_name}", "inline": True},
-                ],
+                "fields": fields,
                 "footer": {"text": "netdata-brain • critical alert"},
                 "timestamp": self._ts(),
             }]
         }
         self._post(payload)
 
-    def send_critical_cleared(self, node: NodeInfo):
+    def send_critical_cleared(self, node: NodeInfo, prev_alerts: list = None):
+        fields = []
+        if node.warning_count:
+            fields.append({"name": "Remaining Warnings", "value": str(node.warning_count), "inline": True})
+
+        if prev_alerts:
+            crit_alerts = [a for a in prev_alerts if a.status == "CRITICAL"]
+            if crit_alerts:
+                lines = [f"• **{a.name}** (`{a.chart}`)" for a in crit_alerts[:8]]
+                if len(crit_alerts) > 8:
+                    lines.append(f"…and {len(crit_alerts) - 8} more")
+                fields.append({
+                    "name": f"✅ Resolved ({len(crit_alerts)})",
+                    "value": "\n".join(lines),
+                    "inline": False,
+                })
+
         payload = {
             "username": "netdata-brain",
             "embeds": [{
                 "title": f"✅ Critical Cleared: {node.name}",
-                "description": f"**{node.name}** critical alerts resolved (warnings: {node.warning_count})",
+                "description": f"**{node.name}** critical alerts resolved",
                 "color": COLOR_RECOVERY,
+                "fields": fields,
                 "footer": {"text": "netdata-brain • alert cleared"},
                 "timestamp": self._ts(),
             }]
