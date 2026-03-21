@@ -121,14 +121,14 @@ class DiscordAlerter:
             if crit_alerts:
                 lines = []
                 for a in crit_alerts[:8]:
-                    line = f"• **{a.name}** (`{a.chart}`)"
-                    if a.info:
-                        line += f"\n  ↳ {a.info}"
-                    if a.value is not None:
-                        try:
-                            line += f"  [{a.value:.2f}]"
-                        except (TypeError, ValueError):
-                            pass
+                    # Use summary if available, else name
+                    label = a.summary if a.summary else a.name
+                    val = a.value_string if a.value_string else (f"{a.value:.2f}" if a.value is not None else "")
+                    line = f"• **{label}**"
+                    if val:
+                        line += f" → `{val}`"
+                    if a.info and a.info != label:
+                        line += f"\n  {a.info}"
                     lines.append(line)
                 if len(crit_alerts) > 8:
                     lines.append(f"…and {len(crit_alerts) - 8} more")
@@ -159,7 +159,14 @@ class DiscordAlerter:
         if prev_alerts:
             crit_alerts = [a for a in prev_alerts if a.status == "CRITICAL"]
             if crit_alerts:
-                lines = [f"• **{a.name}** (`{a.chart}`)" for a in crit_alerts[:8]]
+                lines = []
+                for a in crit_alerts[:8]:
+                    label = a.summary if a.summary else a.name
+                    val = a.value_string if a.value_string else ""
+                    line = f"• **{label}**"
+                    if val:
+                        line += f" (was `{val}`)"
+                    lines.append(line)
                 if len(crit_alerts) > 8:
                     lines.append(f"…and {len(crit_alerts) - 8} more")
                 fields.append({

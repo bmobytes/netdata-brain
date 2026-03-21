@@ -184,23 +184,11 @@ def main():
                 logger.info(f"NODE UP: {node.name}")
                 alerter.send_node_up(node)
 
-            # Fetch alert details once if any critical changes occurred
-            alert_details: list[Alert] = []
-            if changes["new_critical"] or changes["critical_cleared"]:
-                try:
-                    alert_details = collector.fetch_alerts()
-                except Exception as e:
-                    logger.warning(f"Could not fetch alert details: {e}")
-
-            # Build per-node alert lookup
-            alerts_by_node: dict[str, list[Alert]] = {}
-            for a in alert_details:
-                alerts_by_node.setdefault(a.node_id, []).append(a)
-
             for node, prev_crit in changes["new_critical"]:
-                node_alerts = alerts_by_node.get(node.id, [])
+                # Fetch alarm details directly from the node's local agent API
+                node_alerts = collector.fetch_node_alarms(node)
                 logger.warning(f"NEW CRITICAL: {node.name} ({node.critical_count} alerts) — {[a.name for a in node_alerts if a.status == 'CRITICAL']}")
-                # Cache current alerts so we can show them if they clear next cycle
+                # Cache so we can show what resolved if they clear next cycle
                 tracker.prev_alerts[node.id] = node_alerts
                 alerter.send_new_critical(node, prev_crit, node_alerts)
 

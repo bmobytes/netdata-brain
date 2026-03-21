@@ -1,6 +1,7 @@
 """
 Netdata Cloud API collector.
-Fetches node status, alert counts, and active alerts.
+Fetches node status and alert counts from Netdata Cloud.
+Fetches individual alarm details directly from each node's local agent API.
 """
 
 import logging
@@ -28,6 +29,7 @@ class NodeInfo:
     critical_count: int
     is_reachable: bool
     node_type: str      # linux | macos | snmp | haos | unknown
+    ip: str = ""        # primary IP from hostLabels (_net_default_iface_ip)
 
 
 @dataclass
@@ -38,12 +40,16 @@ class Alert:
     chart: str
     status: str         # CRITICAL | WARNING | CLEAR
     value: Optional[float]
-    info: str
+    value_string: str   # human-readable value (e.g. "100%", "down", "2 disks")
+    summary: str        # short description of what triggered
+    info: str           # longer description
     last_updated: str
 
 
 class NetdataCollector:
     BASE_URL = "https://app.netdata.cloud/api/v2"
+    AGENT_PORT = 19999
+    AGENT_TIMEOUT = 5
 
     def __init__(self, api_token: str, space_id: str, room_id: str):
         self.api_token = api_token
@@ -75,7 +81,6 @@ class NetdataCollector:
         labels = node.get("hostLabels") or {}
         vnode_type = labels.get("_vnode_type", "")
         os_name = node.get("osName", "").lower()
-        container = node.get("container", "")
 
         if vnode_type == "snmp":
             return "snmp"
@@ -96,6 +101,7 @@ class NetdataCollector:
             nodes = []
             for n in data:
                 alarm = n.get("alarmCounters", {})
+                labels = n.get("hostLabels") or {}
                 nodes.append(NodeInfo(
                     id=n.get("id", ""),
                     name=n.get("name", "unknown"),
@@ -112,6 +118,7 @@ class NetdataCollector:
                     critical_count=alarm.get("critical", 0),
                     is_reachable=n.get("state") == "reachable",
                     node_type=self._classify_node_type(n),
+                    ip=labels.get("_net_default_iface_ip", ""),
                 ))
             logger.info(f"Fetched {len(nodes)} nodes ({sum(1 for n in nodes if n.is_reachable)} reachable)")
             return nodes
@@ -119,29 +126,49 @@ class NetdataCollector:
             logger.error(f"Failed to fetch nodes: {e}")
             return []
 
-    def fetch_alerts(self) -> list[Alert]:
-        """Fetch active alerts across all nodes in the room."""
-        path = f"/spaces/{self.space_id}/rooms/{self.room_id}/alerts"
+    def fetch_node_alarms(self, node: NodeInfo) -> list[Alert]:
+        """
+        Fetch active alarms directly from a node's local Netdata agent API.
+        The Cloud API only exposes alarm counts — details live on the agent itself.
+        Returns empty list if the node has no IP or is unreachable.
+        """
+        if not node.ip:
+            logger.warning(f"No IP for node {node.name}, cannot fetch alarm details")
+            return []
+
+        url = f"http://{node.ip}:{self.AGENT_PORT}/api/v1/alarms"
         try:
-            data = self._get(path, params={"status": "CRITICAL,WARNING"})
+            resp = requests.get(url, params={"active": True}, timeout=self.AGENT_TIMEOUT)
+            resp.raise_for_status()
+            data = resp.json()
+            alarms_raw = data.get("alarms", {})
+
             alerts = []
-            # API returns different shapes — handle both list and dict with items
-            items = data if isinstance(data, list) else data.get("alerts", data.get("items", []))
-            for a in items:
+            for alarm_key, a in alarms_raw.items():
+                status = a.get("status", "")
+                if status not in ("CRITICAL", "WARNING"):
+                    continue
                 alerts.append(Alert(
-                    node_id=a.get("node_id", a.get("nodeId", "")),
-                    node_name=a.get("node_name", a.get("nodeName", "unknown")),
-                    name=a.get("name", a.get("alarm", "")),
+                    node_id=node.id,
+                    node_name=node.name,
+                    name=a.get("name", alarm_key),
                     chart=a.get("chart", ""),
-                    status=a.get("status", ""),
+                    status=status,
                     value=a.get("value"),
+                    value_string=a.get("value_string", ""),
+                    summary=a.get("summary", ""),
                     info=a.get("info", ""),
-                    last_updated=a.get("last_status_change", a.get("when", "")),
+                    last_updated=str(a.get("last_status_change", "")),
                 ))
-            logger.info(f"Fetched {len(alerts)} active alerts")
+
+            logger.info(f"Fetched {len(alerts)} active alarms from {node.name} ({node.ip})")
             return alerts
+
+        except requests.exceptions.Timeout:
+            logger.warning(f"Timeout fetching alarms from {node.name} ({node.ip})")
+            return []
         except Exception as e:
-            logger.warning(f"Could not fetch alerts (may not be supported): {e}")
+            logger.warning(f"Could not fetch alarms from {node.name} ({node.ip}): {e}")
             return []
 
     def get_space_info(self) -> dict:
