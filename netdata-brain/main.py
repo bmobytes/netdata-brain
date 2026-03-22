@@ -77,8 +77,10 @@ class StateTracker:
                     changes["came_online"].append(node)
 
             # Critical alert transitions (only for reachable nodes)
+            # Only alert on 0→N (new outbreak) and N→0 (fully cleared)
+            # Ignore count fluctuations while already in a critical state
             if node.is_reachable and prev_state is not None:
-                if node.critical_count > prev_crit:
+                if node.critical_count > 0 and prev_crit == 0:
                     changes["new_critical"].append((node, prev_crit))
                 elif node.critical_count == 0 and prev_crit > 0:
                     changes["critical_cleared"].append(node)
